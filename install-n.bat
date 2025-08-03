@@ -13,32 +13,31 @@ set "startTime=%time: =0%"
 cls
 
 echo %ESC%[96m╔══════════════════════════════════════════════════════════════════════════════╗%ESC%[0m
-echo %ESC%[96m║%ESC%[0m %ESC%[91m   ____                __      _   _ _____   ___           _        _ _      %ESC%[0m %ESC%[96m║%ESC%[0m
-echo %ESC%[96m║%ESC%[0m %ESC%[91m  / ___^|___  _ __ ___  / _^|_   _^| ^| ^| ^|_ _^|  ^|_ _^|_ __  ___^| ^|_ __ _^| ^| ^|     %ESC%[0m %ESC%[96m║%ESC%[0m
-echo %ESC%[96m║%ESC%[0m %ESC%[91m ^| ^|   / _ \^| '_ ` _ \^| ^|_^| ^| ^| ^| ^| ^| ^|^| ^|    ^| ^|^| '_ \/ __^| __/ _` ^| ^| ^|     %ESC%[0m %ESC%[96m║%ESC%[0m
-echo %ESC%[96m║%ESC%[0m %ESC%[91m ^| ^|__^| (_) ^| ^| ^| ^| ^| ^|  _^| ^|_^| ^| ^|_^| ^|^| ^|    ^| ^|^| ^| ^| \__ \ ^|^| (_^| ^| ^| ^|     %ESC%[0m %ESC%[96m║%ESC%[0m
-echo %ESC%[96m║%ESC%[0m %ESC%[91m  \____\___/^|_^| ^|_^| ^|_^|_^|  \__, ^|\___/^|___^|  ^|___^|_^| ^|_^|___/\__\__,_^|_^|_^|     %ESC%[0m %ESC%[96m║%ESC%[0m
-echo %ESC%[96m║%ESC%[0m %ESC%[91m                           ^|___/                                             %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[91m   ____                 __       _   _ ____   ___           _        _ _    %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[91m  / ___^|___  _ __ ___  / _^|_   _^| ^| ^| ^|_ _^|  ^|_ _^|_ __  ___^| ^|_ __ _^| ^| ^|   %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[91m ^| ^|   / _ \^| '_ ` _ \^| ^|_^| ^| ^| ^| ^| ^| ^|^| ^|    ^| ^|^| '_ \/ __^| __/ _` ^| ^| ^|   %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[91m ^| ^|__^| (_) ^| ^| ^| ^| ^| ^|  _^| ^|_^| ^| ^|_^| ^|^| ^|    ^| ^|^| ^| ^| \__ \ ^|^| (_^| ^| ^| ^|   %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[91m  \____\___/^|_^| ^|_^| ^|_^|_^|  \__, ^|\___/^|___^|  ^|___^|_^| ^|_^|___/\__\__,_^|_^|_^|   %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[91m                           ^|___/                                            %ESC%[0m %ESC%[96m║%ESC%[0m
 echo %ESC%[96m║%ESC%[0m                                                                              %ESC%[96m║%ESC%[0m
-echo %ESC%[96m║%ESC%[0m %ESC%[93m                      ╔══════════════════════════════════╗                   %ESC%[0m %ESC%[96m║%ESC%[0m
-echo %ESC%[96m║%ESC%[0m %ESC%[93m                      ║%ESC%[0m %ESC%[95m     ZLUDA for AMD GPUs     %ESC%[0m %ESC%[93m║                   %ESC%[0m %ESC%[96m║%ESC%[0m
-echo %ESC%[96m║%ESC%[0m %ESC%[93m                      ╚══════════════════════════════════╝                   %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[93m                      ╔══════════════════════════════════╗                  %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[93m                      ║%ESC%[0m %ESC%[95m     ZLUDA for AMD GPUs        %ESC%[0m %ESC%[93m║                   %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[93m                      ╚══════════════════════════════════╝                  %ESC%[0m %ESC%[96m║%ESC%[0m
 echo %ESC%[96m║%ESC%[0m                                                                              %ESC%[96m║%ESC%[0m
-echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ PyTorch 2.8 (CUDA-compatible layer)                                    %ESC%[0m %ESC%[96m║%ESC%[0m
-echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ Triton 3.4 (High-performance GPU computing)                           %ESC%[0m %ESC%[96m║%ESC%[0m
-echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ Flash Attention 2 (Memory-efficient attention for Triton)            %ESC%[0m %ESC%[96m║%ESC%[0m
-echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ Sage Attention 1 (Advanced attention mechanisms)                      %ESC%[0m %ESC%[96m║%ESC%[0m
-echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ HIP SDK 6.5 (ROCm development toolkit)                                 %ESC%[0m %ESC%[96m║%ESC%[0m
-echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ MIOpen (AMD's machine learning primitives library)                    %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ PyTorch 2.8 (CUDA-compatible layer)                                     %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ Triton 3.4 (High-performance GPU computing)                             %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ Flash Attention 2 (Memory-efficient attention for Triton)               %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ Sage Attention 1 (Advanced attention mechanisms)                        %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ HIP SDK 6.5 (ROCm development toolkit)                                  %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ MIOpen (AMD's machine learning primitives library)                      %ESC%[0m %ESC%[96m║%ESC%[0m
 echo %ESC%[96m║%ESC%[0m                                                                              %ESC%[96m║%ESC%[0m
 echo %ESC%[96m║%ESC%[0m %ESC%[94m  ┌─────────────────────────────────────────────────────────────────────┐   %ESC%[0m %ESC%[96m║%ESC%[0m
-echo %ESC%[96m║%ESC%[0m %ESC%[94m  │%ESC%[0m %ESC%[97m  Bringing CUDA compatibility to AMD Radeon Graphics Cards   %ESC%[0m %ESC%[94m│   %ESC%[0m %ESC%[96m║%ESC%[0m
-echo %ESC%[96m║%ESC%[0m %ESC%[94m  │%ESC%[0m %ESC%[97m        Powered by ZLUDA translation layer technology        %ESC%[0m %ESC%[94m│   %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[94m  │%ESC%[0m %ESC%[97m  Bringing CUDA compatibility to AMD Radeon Graphics Cards         %ESC%[0m %ESC%[94m│   %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[94m  │%ESC%[0m %ESC%[97m        Powered by ZLUDA translation layer technology              %ESC%[0m %ESC%[94m│   %ESC%[0m %ESC%[96m║%ESC%[0m
 echo %ESC%[96m║%ESC%[0m %ESC%[94m  └─────────────────────────────────────────────────────────────────────┘   %ESC%[0m %ESC%[96m║%ESC%[0m
 echo %ESC%[96m╚══════════════════════════════════════════════════════════════════════════════╝%ESC%[0m
 echo.
-echo %ESC%[93m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓%ESC%[0m
-echo.
+pause
 echo  ::  %time:~0,8%  ::  - Setting up the virtual enviroment
 Set "VIRTUAL_ENV=venv"
 If Not Exist "%VIRTUAL_ENV%\Scripts\activate.bat" (
