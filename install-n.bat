@@ -4,13 +4,39 @@ title ComfyUI-Zluda Installer
 
 set HIP_SDK_DIR=C:\Program Files\AMD\ROCm\6.5
 set ZLUDA_COMGR_LOG_LEVEL=1
+set ESC=
+
 setlocal EnableDelayedExpansion
 set "startTime=%time: =0%"
 
 cls
-echo ---------------------------------------------------------------
-Echo * COMFYUI-ZLUDA INSTALL (for HIP 6.2.4 with MIOPEN and Triton)*
-echo ---------------------------------------------------------------
+
+echo %ESC%[96m╔══════════════════════════════════════════════════════════════════════════════╗%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[91m   ____                __      _   _ _____   ___           _        _ _      %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[91m  / ___|___  _ __ ___  / _|_   _| | | |_ _|  |_ _|_ __  ___| |_ __ _| | |     %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[91m | |   / _ \| '_ ` _ \| |_| | | | | | || |    | || '_ \/ __| __/ _` | | |     %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[91m | |__| (_) | | | | | |  _| |_| | |_| || |    | || | | \__ \ || (_| | | |     %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[91m  \____\___/|_| |_| |_|_|  \__, |\___/|___|  |___|_| |_|___/\__\__,_|_|_|     %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[91m                           |___/                                             %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m                                                                              %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[93m                      ╔══════════════════════════════════╗                   %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[93m                      ║%ESC%[0m %ESC%[95m     ZLUDA for AMD GPUs     %ESC%[0m %ESC%[93m║                   %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[93m                      ╚══════════════════════════════════╝                   %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m                                                                              %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ PyTorch 2.8 (CUDA-compatible layer)                                    %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ Triton 3.4 (High-performance GPU computing)                           %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ Flash Attention 2 (Memory-efficient attention for Triton)            %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ Sage Attention 1 (Advanced attention mechanisms)                      %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ HIP SDK 6.5 (ROCm development toolkit)                                 %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ MIOpen (AMD's machine learning primitives library)                    %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m                                                                              %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[94m  ┌─────────────────────────────────────────────────────────────────────┐   %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[94m  │%ESC%[0m %ESC%[97m  Bringing CUDA compatibility to AMD Radeon Graphics Cards   %ESC%[0m %ESC%[94m│   %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[94m  │%ESC%[0m %ESC%[97m        Powered by ZLUDA translation layer technology        %ESC%[0m %ESC%[94m│   %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[94m  └─────────────────────────────────────────────────────────────────────┘   %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m╚══════════════════════════════════════════════════════════════════════════════╝%ESC%[0m
+echo.
+echo %ESC%[93m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓%ESC%[0m
 echo.
 echo  ::  %time:~0,8%  ::  - Setting up the virtual enviroment
 Set "VIRTUAL_ENV=venv"
@@ -59,7 +85,7 @@ if "%PY_MINOR%"=="12" (
 
 :: lets just assume triton has been installed, and patch it
 pip install --force-reinstall pypatch-url --quiet
-pypatch-url apply https://raw.githubusercontent.com/sfinktah/amd-torch/refs/heads/main/patches/triton-3.4.0%2Bgita9c80202-cp311-cp311-win_amd64.patch -p 4 triton
+pypatch-url apply https://raw.githubusercontent.com/sfinktah/amd-torch/refs/heads/main/patches/triton-3.4.0+gita9c80202-cp311-cp311-win_amd64.patch -p 4 triton
 
 echo  ::  %time:~0,8%  ::  - Installing flash-attention
 
