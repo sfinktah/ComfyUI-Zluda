@@ -59,6 +59,7 @@ if "%PY_MINOR%"=="12" (
 :: patching triton
 pip install --force-reinstall pypatch-url --quiet
 pypatch-url apply https://raw.githubusercontent.com/sfinktah/amd-torch/refs/heads/main/patches/triton-3.4.0+gita9c80202-cp311-cp311-win_amd64.patch -p 4 triton
+pypatch-url apply https://raw.githubusercontent.com/sfinktah/amd-torch/refs/heads/main/patches/torch-2.7.0+cu118-cp311-cp311-win_amd64.patch -p 4 torch
 
 echo  ::  %time:~0,8%  ::  - Installing flash-attention
 
