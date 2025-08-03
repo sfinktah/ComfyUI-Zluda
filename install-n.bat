@@ -244,7 +244,8 @@ set /A "elap=((((10!end:%time:~2,1%=%%100)*60+1!%%100)-((((10!start:%time:~2,1%=
 set /A "cc=elap%%100+100,elap/=100,ss=elap%%60+100,elap/=60,mm=elap%%60+100,hh=elap/60+100"
 echo .....................................................
 echo *** Installation is completed in %hh:~1%%time:~2,1%%mm:~1%%time:~2,1%%ss:~1%%time:~8,1%%cc:~1% .
-echo *** You can use "comfyui-n.bat" to start the app later.
+echo *** You can use "comfyui-n.bat" to start the app later. First, you must edit (or better still, make a copy) and
+echo *** ensure you have "set TRITON_OVERRIDE_ARCH=gfx1100" (or whatever gfxXXXX code corrosponds to your GPU).
 echo *** It is advised to make a copy of "comfyui-n.bat" and modify it to your liking so when updating later it won't cause problems.
 echo *** You can use -- "--use-pytorch-cross-attention" , "--use-quad-cross-attention" , "--use-flash-attention" or "--use-sage-attention"
 echo .....................................................
