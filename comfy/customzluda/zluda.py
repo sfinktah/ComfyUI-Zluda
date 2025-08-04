@@ -88,57 +88,97 @@ def detect_amd_gpu_architecture():
         print(f"  ::  GPU detection failed: {str(e)}")
         return None
 
-def gpu_name_to_gfx(gpu_name):
+import re
+
+def gpu_name_to_gfx(gpu_name: str) -> str:
     """
-    Map GPU names to their corresponding gfx architecture codes
+    Map an AMD GPU product name to its corresponding GFX architecture code.
+    Updated to include RDNA3.5 (gfx115x) and RDNA4 (gfx12xx) families.
     """
-    gpu_name_lower = gpu_name.lower()
-    
-    # RDNA3 (gfx11xx)
-    if any(x in gpu_name_lower for x in ['rx 7900', 'rx 7800', 'rx 7700', 'rx 7600', 'rx 7500']):
-        if 'rx 7900' in gpu_name_lower:
-            return 'gfx1100'  # Navi 31
-        elif 'rx 7800' in gpu_name_lower or 'rx 7700' in gpu_name_lower:
-            return 'gfx1101'  # Navi 32
-        elif 'rx 7600' in gpu_name_lower or 'rx 7500' in gpu_name_lower:
-            return 'gfx1102'  # Navi 33
-    
-    # RDNA2 (gfx10xx)
-    elif any(x in gpu_name_lower for x in ['rx 6950', 'rx 6900', 'rx 6800', 'rx 6750', 'rx 6700']):
-        return 'gfx1030'  # Navi 21/22
-    elif any(x in gpu_name_lower for x in ['rx 6650', 'rx 6600', 'rx 6500', 'rx 6400']):
-        return 'gfx1032'  # Navi 23/24
-    
-    # RDNA1 (gfx10xx)
-    elif any(x in gpu_name_lower for x in ['rx 5700', 'rx 5600', 'rx 5500']):
-        return 'gfx1010'  # Navi 10
-    
-    # Vega (gfx9xx)
-    elif any(x in gpu_name_lower for x in ['vega 64', 'vega 56', 'vega 20', 'radeon vii']):
-        return 'gfx900'   # Vega 10/20
-    elif 'vega 11' in gpu_name_lower or 'vega 8' in gpu_name_lower:
-        return 'gfx902'   # Raven Ridge APU
-    
-    # Polaris (gfx8xx)
-    elif any(x in gpu_name_lower for x in ['rx 580', 'rx 570', 'rx 480', 'rx 470']):
-        return 'gfx803'   # Polaris 10/20
-    elif any(x in gpu_name_lower for x in ['rx 560', 'rx 550', 'rx 460']):
-        return 'gfx803'   # Polaris 11/12
-    
-    # Default fallback - try to extract numbers and make educated guess
-    if 'rx 9' in gpu_name_lower:  # Future RDNA4?
-        return 'gfx1200'  # Anticipated next gen
-    elif 'rx 8' in gpu_name_lower:  # Future RDNA4?
-        return 'gfx1150'  # Anticipated next gen
-    elif 'rx 7' in gpu_name_lower:
-        return 'gfx1100'  # Default RDNA3
-    elif 'rx 6' in gpu_name_lower:
-        return 'gfx1030'  # Default RDNA2
-    elif 'rx 5' in gpu_name_lower:
-        return 'gfx1010'  # Default RDNA1
-    
+
+    name = gpu_name.lower().strip()
+
+    # Mapping of GPU name substrings to GFX codes
+    gpu_gfx_map = [
+        # RDNA4 (gfx12xx, released/announced 2024+)
+        (["rx 9900", "rx 9800", "rx 9700", "navi 4"],   "gfx1200"),  # Example RDNA4 (desktop/workstation)
+        (["rx 9600", "rx 9500"],                        "gfx1201"),  # Entry-level RDNA4
+
+        # RDNA3.5 (gfx115x, launched late 2023/2024)
+        (["rx 8800", "navi 48"],                        "gfx1150"),
+        (["rx 8700"],                                   "gfx1151"),
+        (["rx 8600", "navi 44"],                        "gfx1152"),
+
+        # RDNA3 (gfx11xx)
+        (["rx 7900"],                                   "gfx1100"),
+        (["rx 7800", "rx 7700"],                        "gfx1101"),
+        (["rx 7600", "rx 7500"],                        "gfx1102"),
+        (["navi 33"],                                   "gfx1102"),
+        (["navi 32"],                                   "gfx1101"),
+        (["navi 31"],                                   "gfx1100"),
+        # Mobile/workstation variants
+        (["pro w7800", "pro w7700"],                    "gfx1103"),
+
+        # RDNA2 (gfx10xx)
+        (["rx 6950", "rx 6900", "rx 6800", "rx 6750", "rx 6700", "navi 21", "navi 22"], "gfx1030"),
+        (["rx 6650", "rx 6600", "rx 6500", "rx 6400", "navi 23", "navi 24"],            "gfx1032"),
+        (["pro w6600", "pro w6400"],                    "gfx1034"),
+        (["pro w6500"],                                 "gfx1035"),
+
+        # RDNA1 (gfx101x)
+        (["rx 5700", "rx 5600", "rx 5500", "navi 10"],  "gfx1010"),
+        (["navi 12"],                                   "gfx1011"),
+        (["navi 14"],                                   "gfx1012"),
+
+        # Special/rare revisions
+        (["rx 5300", "pro w5500"],                      "gfx1012"),
+
+        # Legacy architectures shown for completeness
+        (["vega 64", "vega 56", "vega 20", "radeon vii"], "gfx900"),
+        (["vega 11", "vega 8"],                         "gfx902"),
+        (["rx 580", "rx 570", "rx 480", "rx 470"],      "gfx803"),
+        (["rx 560", "rx 550", "rx 460"],                "gfx803"),
+    ]
+
+    # First try for an exact match in lookup table
+    for tokens, gfx_code in gpu_gfx_map:
+        if any(token in name for token in tokens):
+            return gfx_code
+
+    # Heuristic mapping for known branding patterns
+    # Attempt to parse "rx ####" and guess family
+    match = re.search(r'rx\s*(\d{4})', name)
+    if match:
+        number = int(match.group(1))
+        if number >= 9900:
+            return "gfx1200"   # Top RDNA4
+        elif number >= 9700:
+            return "gfx1200"   # RDNA4
+        elif number >= 9600:
+            return "gfx1201"   # RDNA4 entry/laptop
+        elif number >= 8800:
+            return "gfx1150"   # RDNA3.5
+        elif number >= 8700:
+            return "gfx1151"   # RDNA3.5 mid-range
+        elif number >= 8600:
+            return "gfx1152"   # RDNA3.5 low-end
+        elif number >= 7900:
+            return "gfx1100"
+        elif number >= 7800:
+            return "gfx1101"
+        elif number >= 7600:
+            return "gfx1102"
+        elif number >= 7500:
+            return "gfx1102"
+        elif number >= 6950:
+            return "gfx1030"
+        elif number >= 6650:
+            return "gfx1032"
+        elif number >= 5700:
+            return "gfx1010"
+
     print(f"  ::  Unknown GPU model: {gpu_name}, using default gfx1030")
-    return 'gfx1030'  # Safe default for most modern AMD GPUs
+    return 'gfx1030'  # Safe fallback for most modern AMD GPUs
 
 def set_triton_arch_override():
     """
@@ -147,6 +187,9 @@ def set_triton_arch_override():
     # Check if already set by user
     if 'TRITON_OVERRIDE_ARCH' in os.environ:
         print(f"  ::  TRITON_OVERRIDE_ARCH already set to: {os.environ['TRITON_OVERRIDE_ARCH']}")
+        gfx_arch = detect_amd_gpu_architecture()
+        if gfx_arch != os.environ['TRITON_OVERRIDE_ARCH']:
+            print(f"  ::  Warning: TRITON_OVERRIDE_ARCH does not match detected gfx_arch: {gfx_arch}")
         return
     
     print("  ::  Auto-detecting AMD GPU architecture for Triton...")
