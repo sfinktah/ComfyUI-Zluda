@@ -142,19 +142,17 @@ if defined COMFYUI_DIR (
     )
 
     REM Add cleaning for ComfyUI-WanVideoWrapper text_embed_cache if COMFYUI_DIR is set
-    if defined COMFYUI_DIR (
-        set "WANVIDEOWRAPPER_CACHE=!COMFYUI_DIR!\custom_nodes\ComfyUI-WanVideoWrapper\text_embed_cache"
+    set "WANVIDEOWRAPPER_CACHE=!COMFYUI_DIR!\custom_nodes\ComfyUI-WanVideoWrapper\text_embed_cache"
+    if exist "!WANVIDEOWRAPPER_CACHE!" (
+        echo Removing ComfyUI-WanVideoWrapper text_embed_cache...
+        rd /s /q "!WANVIDEOWRAPPER_CACHE!" 2>nul
         if exist "!WANVIDEOWRAPPER_CACHE!" (
-            echo Removing ComfyUI-WanVideoWrapper text_embed_cache...
-            rd /s /q "!WANVIDEOWRAPPER_CACHE!" 2>nul
-            if exist "!WANVIDEOWRAPPER_CACHE!" (
-                echo   Warning: Could not remove !WANVIDEOWRAPPER_CACHE!
-            ) else (
-                echo   Successfully removed !WANVIDEOWRAPPER_CACHE!
-            )
+            echo   Warning: Could not remove !WANVIDEOWRAPPER_CACHE!
         ) else (
-            echo   ComfyUI-WanVideoWrapper text_embed_cache not found: !WANVIDEOWRAPPER_CACHE!
+            echo   Successfully removed !WANVIDEOWRAPPER_CACHE!
         )
+    ) else (
+        echo   ComfyUI-WanVideoWrapper text_embed_cache not found: !WANVIDEOWRAPPER_CACHE!
     )
 ) else (
     echo   COMFYUI_DIR not available, skipping ComfyUI-specific directories
