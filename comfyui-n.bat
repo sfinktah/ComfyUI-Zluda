@@ -20,6 +20,17 @@ copy comfy\customzluda\zluda-default.py comfy\zluda.py /y >NUL
 git pull
 copy comfy\customzluda\zluda.py comfy\zluda.py /y >NUL
 
+:: Check if cg-quicknodes directory exists and handle accordingly
+if exist .\custom_nodes\cg-quicknodes\ (
+    echo *** Updating cg-quicknodes repository
+    cd .\custom_nodes\cg-quicknodes\
+    git pull
+    cd ..\..\  
+) else (
+    echo *** Cloning cg-quicknodes repository
+    git clone https://github.com/sfinktah/cg-quicknodes .\custom_nodes\cg-quicknodes
+)
+
 echo.
 .\zluda\zluda.exe -- %PYTHON% main.py %COMMANDLINE_ARGS%
 pause
