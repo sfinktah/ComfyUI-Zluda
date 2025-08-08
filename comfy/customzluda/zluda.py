@@ -101,43 +101,38 @@ def gpu_name_to_gfx(gpu_name: str) -> str:
     # Mapping of GPU name substrings to GFX codes
     gpu_gfx_map = [
         # RDNA4 (gfx12xx, released/announced 2024+)
-        (["rx 9900", "rx 9800", "rx 9700", "navi 4"],   "gfx1200"),  # Example RDNA4 (desktop/workstation)
+        (["rx 9900", "rx 9800", "rx 9700"],             "gfx1200"),  # RDNA4 (desktop/workstation)
         (["rx 9600", "rx 9500"],                        "gfx1201"),  # Entry-level RDNA4
 
         # RDNA3.5 (gfx115x, launched late 2023/2024)
-        (["rx 8800", "navi 48"],                        "gfx1150"),
-        (["rx 8700"],                                   "gfx1151"),
-        (["rx 8600", "navi 44"],                        "gfx1152"),
+        (["rx 8800"],                                   "gfx1150"),
+        (["rx 8700", "8060s"],                          "gfx1151"),
+        (["rx 8600"],                                   "gfx1152"),
 
         # RDNA3 (gfx11xx)
-        (["rx 7900"],                                   "gfx1100"),
-        (["rx 7800", "rx 7700"],                        "gfx1101"),
+        (["pro w7900", "rx 7900"],                      "gfx1100"),
+        (["pro w7800"],                                 "gfx1100"),
+        (["pro w7700", "rx 7800", "rx 7700"],           "gfx1101"),
         (["rx 7600", "rx 7500"],                        "gfx1102"),
-        (["navi 33"],                                   "gfx1102"),
-        (["navi 32"],                                   "gfx1101"),
-        (["navi 31"],                                   "gfx1100"),
-        # Mobile/workstation variants
-        (["pro w7800", "pro w7700"],                    "gfx1103"),
 
         # RDNA2 (gfx10xx)
-        (["rx 6950", "rx 6900", "rx 6800", "rx 6750", "rx 6700", "navi 21", "navi 22"], "gfx1030"),
-        (["rx 6650", "rx 6600", "rx 6500", "rx 6400", "navi 23", "navi 24"],            "gfx1032"),
-        (["pro w6600", "pro w6400"],                    "gfx1034"),
-        (["pro w6500"],                                 "gfx1035"),
+        (["pro w6800", "rx 6950", "rx 6900", "rx 6800"], "gfx1030"),
+        (["rx 6750", "rx 6700"],                         "gfx1031"),
+        (["pro w6600", "rx 6650", "rx 6600", "rx 6500",
+          "rx 6400"],                                    "gfx1032"),
+        (["pro w6400"],                                  "gfx1034"),
+        (["pro w6500"],                                  "gfx1035"),
 
         # RDNA1 (gfx101x)
-        (["rx 5700", "rx 5600", "rx 5500", "navi 10"],  "gfx1010"),
-        (["navi 12"],                                   "gfx1011"),
-        (["navi 14"],                                   "gfx1012"),
-
-        # Special/rare revisions
-        (["rx 5300", "pro w5500"],                      "gfx1012"),
+        (["rx 5700", "rx 5600"],                         "gfx1010"),
+        (["pro w5500", "rx 5500", "rx 5300"],            "gfx1012"),
 
         # Legacy architectures shown for completeness
-        (["vega 64", "vega 56", "vega 20", "radeon vii"], "gfx900"),
-        (["vega 11", "vega 8"],                         "gfx902"),
-        (["rx 580", "rx 570", "rx 480", "rx 470"],      "gfx803"),
-        (["rx 560", "rx 550", "rx 460"],                "gfx803"),
+        (["pro vii", "radeon vii"],                      "gfx906"),
+        (["vega 64", "vega 56", "vega 20"],              "gfx906"),
+        (["vega 11", "vega 8"],                          "gfx902"),
+        (["rx 580", "rx 570", "rx 480", "rx 470"],       "gfx803"),
+        (["rx 560", "rx 550", "rx 460"],                 "gfx803"),
     ]
 
     # First try for an exact match in lookup table
@@ -147,7 +142,7 @@ def gpu_name_to_gfx(gpu_name: str) -> str:
 
     # Heuristic mapping for known branding patterns
     # Attempt to parse "rx ####" and guess family
-    match = re.search(r'rx\s*(\d{4})', name)
+    match = re.search(r'(?:rx|radeon|pro)\s*(\d{4})', name)
     if match:
         number = int(match.group(1))
         if number >= 9900:
@@ -162,6 +157,8 @@ def gpu_name_to_gfx(gpu_name: str) -> str:
             return "gfx1151"   # RDNA3.5 mid-range
         elif number >= 8600:
             return "gfx1152"   # RDNA3.5 low-end
+        elif number >= 8000:
+            return "gfx1151"   # The 8060S is gfx1151, and it's guess or fail.
         elif number >= 7900:
             return "gfx1100"
         elif number >= 7800:
