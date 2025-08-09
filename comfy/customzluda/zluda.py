@@ -1,7 +1,6 @@
 # ------------------- Hide ROCm/HIP -------------------
 import sys
 import os
-import subprocess
 
 os.environ.pop("ROCM_HOME", None)
 os.environ.pop("HIP_HOME", None)
