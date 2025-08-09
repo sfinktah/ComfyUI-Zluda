@@ -1,6 +1,7 @@
 # ------------------- Hide ROCm/HIP -------------------
 import sys
 import os
+import subprocess
 
 os.environ.pop("ROCM_HOME", None)
 os.environ.pop("HIP_HOME", None)
@@ -43,6 +44,112 @@ def detect_amd_gpu_architecture():
     """
     Detect AMD GPU architecture on Windows and return the appropriate gfx code for TRITON_OVERRIDE_ARCH
     """
+
+    # Attempt to determine gfx code using amdgpu-arch.exe (preferred)
+    hip_path_env_raw = os.environ.get("HIP_PATH")
+    hip_path_env = hip_path_env_raw.strip().strip('"') if isinstance(hip_path_env_raw, str) else None
+
+    # Resolve potential locations
+    path_cmd = shutil.which("amdgpu-arch.exe")
+    default_cmd = r"c:\Program Files\AMD\ROCm\6.2\bin\amdgpu-arch.exe"
+
+    hip_root_exists = os.path.isdir(hip_path_env) if hip_path_env else False
+    hip_bin_dir = os.path.join(hip_path_env, "bin") if hip_path_env else None
+    hip_bin_exists = os.path.isdir(hip_bin_dir) if hip_bin_dir else False
+    hip_cmd = os.path.join(hip_bin_dir, "amdgpu-arch.exe") if hip_bin_dir else None
+    hip_cmd_exists = os.path.isfile(hip_cmd) if hip_cmd else False
+
+    found_in_path = bool(path_cmd and os.path.isfile(path_cmd))
+    found_in_hip = hip_cmd_exists
+    found_in_default = os.path.isfile(default_cmd)
+
+    used_cmd = path_cmd if found_in_path else (hip_cmd if found_in_hip else (default_cmd if found_in_default else None))
+
+    # Validate HIP_PATH environment variable and provide actionable guidance
+    if hip_path_env is None or hip_path_env == "":
+        # HIP_PATH not set
+        if found_in_path:
+            # Case 4
+            print("  ::  HIP_PATH is not set. Please create HIP_PATH (e.g., c:\\Program Files\\AMD\\ROCm\\6.2\\) and add %HIP_PATH%\\bin\\ to PATH.")
+        else:
+            # We'll handle full guidance below depending on discovery
+            pass
+    else:
+        # HIP_PATH set; validate structure and contents
+        if not hip_root_exists:
+            print(f"  ::  HIP_PATH is set to '{hip_path_env}', but this directory does not exist. Please set HIP_PATH to your HIP SDK root (e.g., c:\\Program Files\\AMD\\ROCm\\6.2\\).")
+        elif not hip_bin_exists:
+            print(f"  ::  HIP_PATH is set to '{hip_path_env}', but '%HIP_PATH%\\bin\\' was not found. Please repair your HIP installation or correct HIP_PATH.")
+        elif not hip_cmd_exists:
+            print(f"  ::  HIP_PATH appears set, but 'amdgpu-arch.exe' was not found in '%HIP_PATH%\\bin\\'. Please verify your HIP SDK installation.")
+
+    # Issue guidance per requirements (1-4)
+    if used_cmd is None:
+        # Case 1
+        print("  ::  amdgpu-arch.exe not found in PATH, %HIP_PATH%\\bin, or default location.")
+        print("  ::  Please install the AMD HIP SDK. After installation, set HIP_PATH to your HIP SDK root (e.g., c:\\Program Files\\AMD\\ROCm\\6.2\\) and add %HIP_PATH%\\bin\\ to your PATH.")
+    else:
+        if not found_in_path and found_in_hip:
+            # Case 2
+            print("  ::  amdgpu-arch.exe was not found in PATH, but located via %HIP_PATH%\\bin\\.")
+            print("  ::  Please add %HIP_PATH%\\bin\\ to your Windows PATH:")
+            print("      Settings -> System -> About -> Advanced system settings -> Environment Variables")
+            print("      Under 'System variables', select 'Path' -> Edit -> New -> %HIP_PATH%\\bin\\ -> OK")
+        if not found_in_path and not found_in_hip and found_in_default:
+            # Case 3
+            print("  ::  amdgpu-arch.exe was located via full path. Please define HIP_PATH and add %HIP_PATH%\\bin\\ to PATH.")
+            print("      Example: set HIP_PATH=c:\\Program Files\\AMD\\ROCm\\6.2\\ then add %HIP_PATH%\\bin\\ to PATH.")
+            print("      Windows: Settings -> System -> About -> Advanced system settings -> Environment Variables")
+            print("      Create new system variable HIP_PATH with your HIP SDK root, then edit 'Path' to include %HIP_PATH%\\bin\\.")
+        if found_in_path and (hip_path_env is None or hip_path_env == ""):
+            # Case 4 (explicit)
+            print("  ::  HIP_PATH is not set. Please create HIP_PATH (e.g., c:\\Program Files\\AMD\\ROCm\\6.2\\) and add %HIP_PATH%\\bin\\ to PATH.")
+        # Additional hint if HIP_PATH is set but does not correctly contain the exe, even if command is in PATH
+        if found_in_path and hip_path_env and (not hip_root_exists or not hip_bin_exists or not hip_cmd_exists):
+            print("  ::  Note: HIP_PATH is set but does not point to a valid HIP SDK with amdgpu-arch.exe in %HIP_PATH%\\bin\\. Please correct HIP_PATH.")
+
+        # Try to run amdgpu-arch.exe and parse output
+        try:
+            # Confirm the file exists just before execution
+            if not os.path.isfile(used_cmd):
+                print(f"  ::  Resolved amdgpu-arch.exe path does not exist: {used_cmd}. Falling back to other detection methods.")
+            else:
+                result = subprocess.run([used_cmd], capture_output=True, text=True, timeout=10)
+                if result.returncode == 0:
+                    stdout_text = result.stdout or ""
+                    lines = [ln.strip() for ln in stdout_text.splitlines() if ln.strip()]
+                    if not lines:
+                        print("  ::  amdgpu-arch.exe produced no output. Falling back to other detection methods.")
+                    else:
+                        print("  ::  amdgpu-arch.exe output:")
+                        first_gfx = None
+                        for ln in lines:
+                            if ln.startswith("gfx"):
+                                print(f"      - {ln}")
+                                if first_gfx is None:
+                                    first_gfx = ln
+                            else:
+                                print(f"      - {ln} ignored: unknown suffix")
+                        if first_gfx:
+                            return first_gfx
+                        else:
+                            print("  ::  No valid 'gfx' entries found in amdgpu-arch.exe output. Falling back to other detection methods.")
+                else:
+                    stderr_text = (result.stderr or "").strip()
+                    err_msg = f"  ::  amdgpu-arch.exe exited with code {result.returncode}."
+                    if stderr_text:
+                        err_msg += f" Stderr: {stderr_text}"
+                    print(err_msg + " Falling back to other detection methods.")
+        except FileNotFoundError:
+            # Shouldn't happen if used_cmd was resolved, but keep as safeguard
+            print("  ::  amdgpu-arch.exe was not found at the resolved path during execution. Falling back to other detection methods.")
+        except PermissionError:
+            print("  ::  Permission denied when attempting to execute amdgpu-arch.exe. Try running as Administrator or correct file permissions.")
+        except subprocess.TimeoutExpired:
+            print("  ::  amdgpu-arch.exe timed out. Falling back to other detection methods.")
+        except Exception as e:
+            print(f"  ::  Failed to run amdgpu-arch.exe: {str(e)}")
+
     try:
         # Method 1: Try Windows registry
         try:
