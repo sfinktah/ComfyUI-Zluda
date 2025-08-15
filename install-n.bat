@@ -55,14 +55,14 @@ echo  ::  %time:~0,8%  ::  Beginning installation ...
 echo.
 echo  ::  %time:~0,8%  ::  - Installing torch for AMD GPUs (First file is 2.7 GB, please be patient)
 :: install pytorch 2.8 for cuda11.8
-pip install --force-reinstall --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu118 --quiet
+pip install --force-reinstall --pre torch torchvision torchaudio numpy==1.*
 echo  ::  %time:~0,8%  ::  - Installing required packages
 :: because we have already installed torch, pip should consider it already installed
 pip install -r requirements.txt --quiet
 echo  ::  %time:~0,8%  ::  - Installing onnxruntime (required by some nodes)
 pip install onnxruntime --quiet
 echo  ::  %time:~0,8%  ::  - (temporary numpy fix)
-pip install --force-reinstall "numpy<2" --quiet
+pip install --force-reinstall numpy==1.*
 
 echo  ::  %time:~0,8%  ::  - Detecting Python version and installing appropriate triton package
 for /f "tokens=2 delims=." %%a in ('python -c "import sys; print(sys.version)"') do (
@@ -86,11 +86,6 @@ if "%PY_MINOR%"=="12" (
 :: patching triton & torch (from sfinktah ; https://github.com/sfinktah/amd-torch )
 pip install --force-reinstall pypatch-url --quiet
 pypatch-url apply https://raw.githubusercontent.com/sfinktah/amd-torch/refs/heads/main/patches/triton-3.4.0+gita9c80202-cp311-cp311-win_amd64.patch -p 4 triton
-pypatch-url apply https://raw.githubusercontent.com/sfinktah/amd-torch/refs/heads/main/patches/torch-2.7.0+cu118-cp311-cp311-win_amd64.patch -p 4 torch
-
-:: lets just assume triton has been installed, and patch it
-pip install --force-reinstall pypatch-url --quiet
-pypatch-url apply https://raw.githubusercontent.com/sfinktah/amd-torch/refs/heads/main/patches/triton-3.4.0+gita9c80202-cp311-cp311-win_amd64.patch -p 4 triton
 
 echo  ::  %time:~0,8%  ::  - Installing flash-attention
 
@@ -102,12 +97,9 @@ del flash_attn-2.7.4.post1-py3-none-any.whl
 copy comfy\customzluda\fa\distributed.py %VIRTUAL_ENV%\Lib\site-packages\flash_attn\utils\distributed.py /y >NUL
 
 echo  ::  %time:~0,8%  ::  - Installing and patching sage-attention
-pip install sageattention --quiet
-pip install --force-reinstall sageattention --quiet
+pip install --force-reinstall pypatch-url sageattention braceexpand --quiet
 echo  ::  %time:~0,8%  ::  - Patching sage-attention
-copy comfy\customzluda\sa\quant_per_block.py %VIRTUAL_ENV%\Lib\site-packages\sageattention\quant_per_block.py /y >NUL
-copy comfy\customzluda\sa\attn_qk_int8_per_block_causal.py %VIRTUAL_ENV%\Lib\site-packages\sageattention\attn_qk_int8_per_block_causal.py /y >NUL
-copy comfy\customzluda\sa\attn_qk_int8_per_block.py %VIRTUAL_ENV%\Lib\site-packages\sageattention\attn_qk_int8_per_block.py /y >NUL
+pypatch-url apply https://raw.githubusercontent.com/sfinktah/amd-torch/refs/heads/main/patches/sageattention-1.0.6+sfinktah+env-py3-none-any.patch -p 4 sageattention
 
 echo.
 echo  ::  %time:~0,8%  ::  Custom node(s) installation ...
@@ -117,122 +109,20 @@ copy cfz\cfz_patcher.py custom_nodes\cfz_patcher.py /y >NUL
 copy cfz\cfz_cudnn.toggle.py custom_nodes\cfz_cudnn.toggle.py /y >NUL
 copy cfz\cfz_vae_loader.py custom_nodes\cfz_vae_loader.py /y >NUL
 echo  ::  %time:~0,8%  ::  - Installing Comfyui Manager
-echo  ::  %time:~0,8%  ::  - Copying python libs
-
-:: Step 13: Copy Python libs
-xcopy /E /I /Y "%LocalAppData%\Programs\Python\Python3%PY_MINOR%\libs" "venv\libs"
-set ERRLEVEL=%errorlevel%
-if %ERRLEVEL% neq 0 (
-    echo "Failed to copy Python3%PY_MINOR%\libs to virtual environment."
-    exit /b %ERRLEVEL%
-)
-
-:: Step 13b: Check if HIP SDK exists, otherwise download and extract it
-set "HIP_SDK_PARENT=%HIP_SDK_DIR%"
-for %%A in ("%HIP_SDK_PARENT%\.") do set "HIP_SDK_PARENT=%%~dpA"
-if "%HIP_SDK_PARENT:~-1%"=="\" set "HIP_SDK_PARENT=%HIP_SDK_PARENT:~0,-1%"
-set "TEST_FILE=%HIP_SDK_PARENT%\__write_test__.tmp"
-echo HIP_SDK_DIR: %HIP_SDK_DIR%
-echo HIP_SDK_PARENT: %HIP_SDK_PARENT%
-echo HIP_ZIP_PATH: %HIP_ZIP_PATH%
-if not exist "%HIP_SDK_DIR%\bin\clang.exe" (
-    echo HIP SDK not found at %HIP_SDK_DIR%.
-    if exist "%HIP_ZIP_PATH%" (
-        echo Using previously downloaded file: %HIP_ZIP_PATH%
-    ) else (
-        echo Attempting to download...
-        curl -o "%HIP_ZIP_PATH%" "%HIP_ZIP_URL%"
-        set ERRLEVEL=!errorlevel!
-        if !ERRLEVEL! neq 0 (
-            echo "Failed to download HIP SDK archive."
-            exit /b !ERRLEVEL!
-        )
-        if not exist "%HIP_ZIP_PATH%" (
-            echo "HIP SDK archive not found after download attempt."
-            exit /b 1
-        )
-    )
-
-    :: --- Check write permission to HIP_SDK_PARENT ---
-    :check_hip_write
-    echo Checking write access to: %HIP_SDK_PARENT%
-
-    :: Create test file
-    echo Checking to see if we have write access to the SDK directory by writing to %TEST_FILE%
-    break > "%TEST_FILE%" 2>nul
-    set ERRLEVEL=%errorlevel%
-
-    if %ERRLEVEL% neq 0 (
-        echo We couldn't write to %TEST_FILE%
-    )
-
-    :: Try modifying it
-    if exist "%TEST_FILE%" (
-        >> "%TEST_FILE%" echo test >>nul 2>nul
-        set MODIFY_ERR=!errorlevel!
-        del "%TEST_FILE%" >nul 2>&1
-    )
-
-    :: Check create permission
-    if %ERRLEVEL% neq 0 (
-        echo [ERROR] Could not create test file in %HIP_SDK_PARENT%.
-        goto :request_admin_fix
-    )
-
-    :: Check modify permission
-    if defined MODIFY_ERR (
-        if !MODIFY_ERR! neq 0 (
-            echo [ERROR] Could not write to test file in %HIP_SDK_PARENT%.
-            goto :request_admin_fix
-        )
-    )
-
-    echo Write access confirmed.
-    goto :hip_access_ok
-
-    :request_admin_fix
-    echo.
-    echo You do not have write access to:
-    echo     %HIP_SDK_PARENT%
-    echo.
-    echo To fix this, open an **Admin Command Prompt** and run:
-    echo     takeown /f "%HIP_SDK_PARENT%" /r /d y
-    echo     icacls "%HIP_SDK_PARENT%" /grant "%USERNAME%:F" /t
-    echo.
-    pause
-    goto check_hip_write
-
-    :hip_access_ok
-    :: --- Extract the HIP SDK using tar ---
-    echo Extracting HIP SDK archive using tar...  tar -xf "%HIP_ZIP_PATH%" -C "%HIP_SDK_PARENT%"
-    tar -xf "%HIP_ZIP_PATH%" -C "%HIP_SDK_PARENT%"
-    set ERRLEVEL=%errorlevel%
-    if not %ERRLEVEL%==0 (
-        echo [ERROR] Failed to extract HIP SDK archive using tar.
-        exit /b %ERRLEVEL%
-    )
-
-    if not exist "%HIP_SDK_DIR%\bin\clang.exe" (
-        echo HIP SDK not found at %HIP_SDK_DIR%, which is annoying, since we just put it there.
-        exit /b 1
-    )
-)
-
-
-xcopy /E /I /Y "%LocalAppData%\Programs\Python\Python3%PY_MINOR%\libs" "venv\libs"
-set ERRLEVEL=%errorlevel%
-if %ERRLEVEL% neq 0 (
-    echo "Failed to copy Python3%PY_MINOR%\libs to virtual environment."
-    exit /b %ERRLEVEL%
-)
 cd custom_nodes
 git clone https://github.com/ltdrdata/ComfyUI-Manager.git --quiet
 echo  ::  %time:~0,8%  ::  - Installing ComfyUI-deepcache
 git clone https://github.com/styler00dollar/ComfyUI-deepcache.git --quiet
 cd ..
 
+echo  ::  %time:~0,8%  ::  - Copying python libs
+xcopy /E /I /Y "%LocalAppData%\Programs\Python\Python3%PY_MINOR%\libs" "venv\libs"
+set ERRLEVEL=%errorlevel%
+if %ERRLEVEL% neq 0 (
+    echo "Failed to copy Python3%PY_MINOR%\libs to virtual environment."
+    exit /b %ERRLEVEL%
+)
 
-echo.
 echo.
 echo  ::  %time:~0,8%  ::  - Patching ZLUDA
 :: Download ZLUDA version 3.9.5 nightly
@@ -271,6 +161,6 @@ echo.
 set FLASH_ATTENTION_TRITON_AMD_ENABLE=TRUE
 set MIOPEN_FIND_MODE=2
 set MIOPEN_LOG_LEVEL=3
-.\zluda\zluda.exe -- python main.py --auto-launch --use-quad-cross-attention
+.\zluda\zluda.exe -- python main.py --auto-launch --use-sage-attention
 
 
