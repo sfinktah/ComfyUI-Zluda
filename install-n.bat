@@ -24,7 +24,7 @@ echo %ESC%[96m║%ESC%[0m %ESC%[93m                    ╔═══════�
 echo %ESC%[96m║%ESC%[0m %ESC%[93m                    ║%ESC%[0m %ESC%[95m     ZLUDA for AMD GPUs         %ESC%[0m %ESC%[93m║                    %ESC%[0m %ESC%[96m║%ESC%[0m
 echo %ESC%[96m║%ESC%[0m %ESC%[93m                    ╚══════════════════════════════════╝                    %ESC%[0m %ESC%[96m║%ESC%[0m
 echo %ESC%[96m║%ESC%[0m                                                                              %ESC%[96m║%ESC%[0m
-echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ PyTorch 2.8 (CUDA-compatible layer)                                     %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ PyTorch 2.7.1 (CUDA-compatible layer)                                   %ESC%[0m %ESC%[96m║%ESC%[0m
 echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ Triton 3.4 (High-performance GPU computing)                             %ESC%[0m %ESC%[96m║%ESC%[0m
 echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ Flash Attention 2 (Memory-efficient attention for Triton)               %ESC%[0m %ESC%[96m║%ESC%[0m
 echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ Sage Attention 1 (Advanced attention mechanisms)                        %ESC%[0m %ESC%[96m║%ESC%[0m
@@ -54,8 +54,8 @@ echo.
 echo  ::  %time:~0,8%  ::  Beginning installation ...
 echo.
 echo  ::  %time:~0,8%  ::  - Installing torch for AMD GPUs (First file is 2.7 GB, please be patient)
-:: install pytorch 2.8 for cuda11.8
-pip install --force-reinstall --pre torch torchvision torchaudio numpy==1.*
+:: install pytorch 2.7.1 for cuda11.8
+pip install --force-reinstall --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118 --quiet
 echo  ::  %time:~0,8%  ::  - Installing required packages
 :: because we have already installed torch, pip should consider it already installed
 pip install -r requirements.txt --quiet
