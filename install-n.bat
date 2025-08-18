@@ -56,6 +56,15 @@ echo.
 echo  ::  %time:~0,8%  ::  - Installing torch for AMD GPUs (First file is 2.7 GB, please be patient)
 :: install pytorch 2.8.0 for cuda11.8 (currently broken, due to issue with pytorch nightly repo)
 :: pip install --force-reinstall torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu118
+
+pip install --force-reinstall --pre torch --index-url https://download.pytorch.org/whl/nightly/cu118
+:: Ignore these errors
+::   ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
+::   torchaudio 2.7.0+cu118 requires torch==2.7.0+cu118, but you have torch 2.8.0.dev20250610+cu118 which is incompatible.
+::   torchvision 0.22.0+cu118 requires torch==2.7.0+cu118, but you have torch 2.8.0.dev20250610+cu118 which is incompatible.
+pip install --force-reinstall --pre torchaudio torchvision --index-url https://download.pytorch.org/whl/nightly/cu118 --no-deps
+pip install numpy==1.* pillow torch
+
 :: install pytorch 2.7.1 for cuda11.8
 :: pip install --force-reinstall --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118 --quiet
 :: install pytorch 2.7.0 for cuda11.8
