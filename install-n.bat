@@ -54,8 +54,13 @@ echo.
 echo  ::  %time:~0,8%  ::  Beginning installation ...
 echo.
 echo  ::  %time:~0,8%  ::  - Installing torch for AMD GPUs (First file is 2.7 GB, please be patient)
-:: install pytorch 2.8.0 for cuda11.8
-pip install --force-reinstall torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu118
+:: install pytorch 2.8.0 for cuda11.8 (currently broken, due to issue with pytorch nightly repo)
+:: pip install --force-reinstall torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu118
+:: install pytorch 2.7.1 for cuda11.8
+:: pip install --force-reinstall --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118 --quiet
+:: install pytorch 2.7.0 for cuda11.8
+pip install torch==2.7.0 torchvision==0.22.0 torchaudio==2.7.0 --index-url https://download.pytorch.org/whl/cu118 --quiet
+
 echo  ::  %time:~0,8%  ::  - Installing required packages
 :: because we have already installed torch, pip should consider it already installed
 pip install -r requirements.txt --quiet
@@ -87,6 +92,8 @@ if "%PY_MINOR%"=="12" (
 pip install --force-reinstall pypatch-url --quiet
 pypatch-url apply https://raw.githubusercontent.com/sfinktah/amd-torch/refs/heads/main/patches/triton-3.4.0+gita9c80202-cp311-cp311-win_amd64.patch -p 4 triton
 
+:: dont do this is you aren't install pytorch 2.7  (only tested with 2.7.0, should work with 2.7.1 but haven't tested)
+pypatch-url apply https://raw.githubusercontent.com/sfinktah/amd-torch/refs/heads/main/patches/torch-2.7.0+cu118-cp311-cp311-win_amd64.patch -p 4 torch
 echo  ::  %time:~0,8%  ::  - Installing flash-attention
 
 %SystemRoot%\system32\curl.exe -sL --ssl-no-revoke https://github.com/user-attachments/files/20140536/flash_attn-2.7.4.post1-py3-none-any.zip > fa.zip
