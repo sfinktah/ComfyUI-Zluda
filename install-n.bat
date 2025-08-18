@@ -24,7 +24,7 @@ echo %ESC%[96m║%ESC%[0m %ESC%[93m                    ╔═══════�
 echo %ESC%[96m║%ESC%[0m %ESC%[93m                    ║%ESC%[0m %ESC%[95m     ZLUDA for AMD GPUs         %ESC%[0m %ESC%[93m║                    %ESC%[0m %ESC%[96m║%ESC%[0m
 echo %ESC%[96m║%ESC%[0m %ESC%[93m                    ╚══════════════════════════════════╝                    %ESC%[0m %ESC%[96m║%ESC%[0m
 echo %ESC%[96m║%ESC%[0m                                                                              %ESC%[96m║%ESC%[0m
-echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ PyTorch 2.7.1 (CUDA-compatible layer)                                   %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ PyTorch 2.7.0 (CUDA-compatible layer)                                   %ESC%[0m %ESC%[96m║%ESC%[0m
 echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ Triton 3.4 (High-performance GPU computing)                             %ESC%[0m %ESC%[96m║%ESC%[0m
 echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ Flash Attention 2 (Memory-efficient attention for Triton)               %ESC%[0m %ESC%[96m║%ESC%[0m
 echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ Sage Attention 1 (Advanced attention mechanisms)                        %ESC%[0m %ESC%[96m║%ESC%[0m
