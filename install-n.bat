@@ -54,8 +54,8 @@ echo.
 echo  ::  %time:~0,8%  ::  Beginning installation ...
 echo.
 echo  ::  %time:~0,8%  ::  - Installing torch for AMD GPUs (First file is 2.7 GB, please be patient)
-:: install pytorch 2.7.1 for cuda11.8
-pip install --force-reinstall --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118 --quiet
+:: install pytorch 2.8.0 for cuda11.8
+pip install --force-reinstall torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu118
 echo  ::  %time:~0,8%  ::  - Installing required packages
 :: because we have already installed torch, pip should consider it already installed
 pip install -r requirements.txt --quiet
