@@ -245,7 +245,33 @@ set "PATH=%NEW_ENTRY%;%CLEANED_PATH%"
 echo Final PATH:
 echo %PATH%
 
-.\zluda\zluda.exe -- python main.py --auto-launch --use-sage-attention
+set CC=%HIP_PATH%bin\clang.exe
+set CXX=%HIP_PATH%bin\clang++.exe
+set CXXFLAGS=-march=native -mtune=native
+
+:: Fix for cublasLt errors on newer ZLUDA (if no hipblaslt)
+set DISABLE_ADDMM_CUDA_LT=1
+
+set ROCM_VERSION=6.4
+set TRITON_CACHE_DIR=%~dp0/.triton-%ROCM_VERSION%
+set TORCHINDUCTOR_CACHE_DIR=%~dp0/.inductor-%ROCM_VERSION%
+set NUMBA_CACHE_DIR=%~dp0/.numba-%ROCM_VERSION%
+set ZLUDA_CACHE_DIR=%~dp0/.zluda-%ROCM_VERSION%
+set MIOPEN_FIND_MODE=2
+set MIOPEN_LOG_LEVEL=3
+set TRITON_PRINT_AUTOTUNING=1
+set TRITON_CACHE_AUTOTUNING=1
+
+:: https://github.com/Beinsezii/comfyui-amd-go-fast
+set PYTORCH_TUNABLEOP_ENABLED=1
+set MIOPEN_FIND_MODE=FAST
+
+:: Enabling this will cause rocm's amd triton flash-attn to look for CDNA optimisations (we have RDNA, so it will fail -- unless we patch flash attention of course :)
+set FLASH_ATTENTION_TRITON_AMD_AUTOTUNE=TRUE
+set FLASH_ATTENTION_TRITON_AMD_ENABLE=TRUE
+set FLASH_ATTENTION_TRITON_AMD_PERF=TRUE
+
+.\zluda\zluda.exe -- python main.py --auto-launch --use-sage-attention --lowvram --reserve-vram 0
 
 
 
