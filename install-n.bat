@@ -66,6 +66,10 @@ echo %ESC%[96m║%ESC%[0m %ESC%[94m  │%ESC%[0m %ESC%[97m        Powered by ZLU
 echo %ESC%[96m║%ESC%[0m %ESC%[94m  └─────────────────────────────────────────────────────────────────────┘   %ESC%[0m %ESC%[96m║%ESC%[0m
 echo %ESC%[96m╚══════════════════════════════════════════════════════════════════════════════╝%ESC%[0m
 echo.
+for /f "tokens=*" %%i in ('"%HIP_PATH%bin\amdgpu-arch.exe"') do set TRITON_OVERRIDE_ARCH=%%i
+echo Detected: %TRITON_OVERRIDE_ARCH%
+echo.
+
 pause
 echo  ::  %time:~0,8%  ::  - Setting up the virtual enviroment
 Set "VIRTUAL_ENV=venv"
@@ -209,6 +213,9 @@ echo.
 set FLASH_ATTENTION_TRITON_AMD_ENABLE=TRUE
 set MIOPEN_FIND_MODE=2
 set MIOPEN_LOG_LEVEL=3
+echo *** Don't forget to add this line to your comfyui-n.bat: ***
+echo *** SET TRITON_OVERRIDE_ARCH=%TRITON_OVERRIDE_ARCH%
+echo **********//
 .\zluda\zluda.exe -- python main.py --auto-launch --use-sage-attention
 
 
