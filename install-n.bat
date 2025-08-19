@@ -221,6 +221,30 @@ set MIOPEN_LOG_LEVEL=3
 echo *** Don't forget to add this line to your comfyui-n.bat: ***
 echo *** SET TRITON_OVERRIDE_ARCH=%TRITON_OVERRIDE_ARCH%
 echo **********//
+set "NEW_ENTRY=%HIP_PATH%bin"
+set "CLEANED_PATH="
+
+:: Loop over PATH entries and exclude any that contain AMD\ROCm (case-insensitive)
+for %%P in ("%PATH:;=";"%") do (
+    set "PART=%%~P"
+    echo !PART! | find /I "AMD\ROCm" >nul
+    if errorlevel 1 (
+        if defined CLEANED_PATH (
+            set "CLEANED_PATH=!CLEANED_PATH!;!PART!"
+        ) else (
+            set "CLEANED_PATH=!PART!"
+        )
+    )
+)
+
+:: Now prepend NEW_ENTRY
+set "PATH=%NEW_ENTRY%;%CLEANED_PATH%"
+
+
+:: Confirm result
+echo Final PATH:
+echo %PATH%
+
 .\zluda\zluda.exe -- python main.py --auto-launch --use-sage-attention
 
 
