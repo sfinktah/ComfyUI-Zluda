@@ -3,12 +3,36 @@ chcp 65001 >nul
 
 title ComfyUI-Zluda Installer
 
-set HIP_SDK_DIR=C:\Program Files\AMD\ROCm\6.5
+set HIP_SDK_DIR=C:\Program Files\AMD\ROCm\6.4
 set ZLUDA_COMGR_LOG_LEVEL=1
 set ESC=
 
 setlocal EnableDelayedExpansion
 set "startTime=%time: =0%"
+
+echo  ::  %time:~0,8%  ::  - Verifying HIP SDK environment
+if not defined HIP_PATH (
+    echo  ::  %time:~0,8%  ::  - ERROR: HIP_PATH is not set or empty.
+    echo  ::  %time:~0,8%  ::  - Please install HIP SDK 6.4 from:
+    echo      https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-25.Q3-Win10-Win11-For-HIP.exe
+    exit /b 1
+)
+if /I not "%HIP_PATH:~-5%"=="6.4\" (
+    echo  ::  %time:~0,8%  ::  - ERROR: HIP_PATH must end with 6.4\
+    echo  ::  %time:~0,8%  ::  - Current HIP_PATH: %HIP_PATH%
+    echo  ::  %time:~0,8%  ::  - Please install HIP SDK 6.4 from:
+    echo      https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-25.Q3-Win10-Win11-For-HIP.exe
+    exit /b 1
+)
+if not exist "%HIP_PATH%bin\miopen.dll" (
+    echo  ::  %time:~0,8%  ::  - ERROR: MIOpen not found at %HIP_PATH%bin\miopen.dll
+    echo  ::  %time:~0,8%  ::  - Please download HIP SDK 6.5 from:
+    echo      https://nt4.com/HIP-SDK-6.5-develop.zip
+    echo  ::  %time:~0,8%  ::  - Extract the directories under the 6.5 folder (6.5\*) into:
+    echo      %HIP_PATH%
+    echo  ::  %time:~0,8%  ::  - Do NOT overwrite any existing files.
+    exit /b 1
+)
 
 cls
 
@@ -24,11 +48,11 @@ echo %ESC%[96m║%ESC%[0m %ESC%[93m                    ╔═══════�
 echo %ESC%[96m║%ESC%[0m %ESC%[93m                    ║%ESC%[0m %ESC%[95m     ZLUDA for AMD GPUs         %ESC%[0m %ESC%[93m║                    %ESC%[0m %ESC%[96m║%ESC%[0m
 echo %ESC%[96m║%ESC%[0m %ESC%[93m                    ╚══════════════════════════════════╝                    %ESC%[0m %ESC%[96m║%ESC%[0m
 echo %ESC%[96m║%ESC%[0m                                                                              %ESC%[96m║%ESC%[0m
-echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ PyTorch 2.7.0 (CUDA-compatible layer)                                   %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ PyTorch 2.8.0 (CUDA-compatible layer)                                   %ESC%[0m %ESC%[96m║%ESC%[0m
 echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ Triton 3.4 (High-performance GPU computing)                             %ESC%[0m %ESC%[96m║%ESC%[0m
 echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ Flash Attention 2 (Memory-efficient attention for Triton)               %ESC%[0m %ESC%[96m║%ESC%[0m
 echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ Sage Attention 1 (Advanced attention mechanisms)                        %ESC%[0m %ESC%[96m║%ESC%[0m
-echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ HIP SDK 6.5 (ROCm development toolkit)                                  %ESC%[0m %ESC%[96m║%ESC%[0m
+echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ HIP SDK 6.4 (ROCm development toolkit)                                  %ESC%[0m %ESC%[96m║%ESC%[0m
 echo %ESC%[96m║%ESC%[0m %ESC%[92m  ◆ MIOpen (AMD's machine learning primitives library)                      %ESC%[0m %ESC%[96m║%ESC%[0m
 echo %ESC%[96m║%ESC%[0m                                                                              %ESC%[96m║%ESC%[0m
 echo %ESC%[96m║%ESC%[0m %ESC%[94m  ┌─────────────────────────────────────────────────────────────────────┐   %ESC%[0m %ESC%[96m║%ESC%[0m
@@ -63,12 +87,15 @@ pip install --force-reinstall --pre torch --index-url https://download.pytorch.o
 ::   torchaudio 2.7.0+cu118 requires torch==2.7.0+cu118, but you have torch 2.8.0.dev20250610+cu118 which is incompatible.
 ::   torchvision 0.22.0+cu118 requires torch==2.7.0+cu118, but you have torch 2.8.0.dev20250610+cu118 which is incompatible.
 pip install --force-reinstall --pre torchaudio torchvision --index-url https://download.pytorch.org/whl/nightly/cu118 --no-deps
-pip install numpy==1.* pillow torch
+pip install numpy==1.* pillow
 
 :: install pytorch 2.7.1 for cuda11.8
 :: pip install --force-reinstall --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118 --quiet
 :: install pytorch 2.7.0 for cuda11.8
 pip install torch==2.7.0 torchvision==0.22.0 torchaudio==2.7.0 --index-url https://download.pytorch.org/whl/cu118 --quiet
+
+echo  ::  %time:~0,8%  ::  - Updating requirements.txt pins for torch stack
+powershell -NoProfile -ExecutionPolicy Bypass -Command " $p = 'requirements.txt'; $lines = Get-Content -LiteralPath $p; $map = @{ 'numpy'='numpy==1.*'; 'torch'='torch==2.8.0.dev20250610+cu118'; 'torchaudio'='torchaudio==2.8.0.dev20250609+cu118'; 'torchvision'='torchvision==0.23.0.dev20250609+cu118' }; $changed = $false; $out = foreach($line in $lines) { if ($line -match '^\s*(numpy|torch|torchaudio|torchvision)\b') { $pkg = $Matches[1]; $new = $map[$pkg]; if ($line -ne $new) { $changed = $true; Write-Host (' ::  %time:~0,8%  ::  - Updating requirements.txt: {0} -> {1}' -f $pkg, $new); }; $new } else { $line } }; if ($changed) { Set-Content -LiteralPath $p -Value $out -Encoding UTF8 } "
 
 echo  ::  %time:~0,8%  ::  - Installing required packages
 :: because we have already installed torch, pip should consider it already installed
@@ -101,8 +128,8 @@ if "%PY_MINOR%"=="12" (
 pip install --force-reinstall pypatch-url --quiet
 pypatch-url apply https://raw.githubusercontent.com/sfinktah/amd-torch/refs/heads/main/patches/triton-3.4.0+gita9c80202-cp311-cp311-win_amd64.patch -p 4 triton
 
-:: dont do this is you aren't install pytorch 2.7  (only tested with 2.7.0, should work with 2.7.1 but haven't tested)
-pypatch-url apply https://raw.githubusercontent.com/sfinktah/amd-torch/refs/heads/main/patches/torch-2.7.0+cu118-cp311-cp311-win_amd64.patch -p 4 torch
+:: dont do this if you aren't installing pytorch 2.7  (only tested with 2.7.0, should work with 2.7.1 but haven't tested)
+:: pypatch-url apply https://raw.githubusercontent.com/sfinktah/amd-torch/refs/heads/main/patches/torch-2.7.0+cu118-cp311-cp311-win_amd64.patch -p 4 torch
 echo  ::  %time:~0,8%  ::  - Installing flash-attention
 
 %SystemRoot%\system32\curl.exe -sL --ssl-no-revoke https://github.com/user-attachments/files/20140536/flash_attn-2.7.4.post1-py3-none-any.zip > fa.zip
@@ -145,7 +172,7 @@ echo  ::  %time:~0,8%  ::  - Patching ZLUDA
 rmdir /S /Q zluda 2>nul
 mkdir zluda
 cd zluda
-%SystemRoot%\system32\curl.exe -sL --ssl-no-revoke https://github.com/lshqqytiger/ZLUDA/releases/download/rel.5e717459179dc272b7d7d23391f0fad66c7459cf/ZLUDA-nightly-windows-rocm6-amd64.zip > zluda.zip
+%SystemRoot%\system32\curl.exe -sL --ssl-no-revoke https://nt4.com/zluda > zluda.zip
 %SystemRoot%\system32\tar.exe -xf zluda.zip
 del zluda.zip
 cd ..
