@@ -3,7 +3,6 @@ chcp 65001 >nul
 
 title ComfyUI-Zluda Installer
 
-set HIP_SDK_DIR=C:\Program Files\AMD\ROCm\6.4
 set ZLUDA_COMGR_LOG_LEVEL=1
 set ESC=
 
@@ -15,20 +14,26 @@ if not defined HIP_PATH (
     echo  ::  %time:~0,8%  ::  - ERROR: HIP_PATH is not set or empty.
     echo  ::  %time:~0,8%  ::  - Please install HIP SDK 6.4 from:
     echo      https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-25.Q3-Win10-Win11-For-HIP.exe
+    if exist "%ProgramFiles%\AMD\ROCm\6.4\" (
+        echo  ::  %time:~0,8%  ::  - NOTE: If you have already installed it, you may need to close and re-open this console/shell.
+    )
     exit /b 1
 )
-if /I not "%HIP_PATH:~-5%"=="6.4\" (
+if /I not "%HIP_PATH:~-4%"=="6.4\" (
     echo  ::  %time:~0,8%  ::  - ERROR: HIP_PATH must end with 6.4\
     echo  ::  %time:~0,8%  ::  - Current HIP_PATH: %HIP_PATH%
     echo  ::  %time:~0,8%  ::  - Please install HIP SDK 6.4 from:
     echo      https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-25.Q3-Win10-Win11-For-HIP.exe
+    if exist "%ProgramFiles%\AMD\ROCm\6.4\" (
+        echo  ::  %time:~0,8%  ::  - NOTE: If you have already installed it, you may need to close and re-open this console/shell.
+    )
     exit /b 1
 )
 if not exist "%HIP_PATH%bin\miopen.dll" (
     echo  ::  %time:~0,8%  ::  - ERROR: MIOpen not found at %HIP_PATH%bin\miopen.dll
     echo  ::  %time:~0,8%  ::  - Please download HIP SDK 6.5 from:
     echo      https://nt4.com/HIP-SDK-6.5-develop.zip
-    echo  ::  %time:~0,8%  ::  - Extract the directories under the 6.5 folder (6.5\*) into:
+    echo  ::  %time:~0,8%  ::  - Then extract the directories in the 6.5 folder into:
     echo      %HIP_PATH%
     echo  ::  %time:~0,8%  ::  - Do NOT overwrite any existing files.
     exit /b 1
