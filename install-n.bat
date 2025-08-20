@@ -162,14 +162,8 @@ if not exist "packages\torch-2.8.0.dev20250608+cu118-cp311-cp311-win_amd64.whl" 
     %SystemRoot%\system32\curl.exe -sL --ssl-no-revoke https://nt4.com/packages/torch-2.8.0.dev20250608+cu118-cp311-cp311-win_amd64.whl -o packages\torch-2.8.0.dev20250608+cu118-cp311-cp311-win_amd64.whl
 )
 
-echo  ::  %time:~0,8%  ::  - Installing torchaudio package
-pip install --force-reinstall packages\torchaudio-2.8.0.dev20250609+cu118-cp311-cp311-win_amd64.whl --quiet
-
-echo  ::  %time:~0,8%  ::  - Installing torchvision package
-pip install --force-reinstall packages\torchvision-0.23.0.dev20250609+cu118-cp311-cp311-win_amd64.whl --quiet
-
-echo  ::  %time:~0,8%  ::  - Installing torch package
-pip install --force-reinstall packages\torch-2.8.0.dev20250608+cu118-cp311-cp311-win_amd64.whl --quiet
+echo  ::  %time:~0,8%  ::  - Installing torch packages
+pip install --force-reinstall packages\torchaudio-2.8.0.dev20250609+cu118-cp311-cp311-win_amd64.whl packages\torchvision-0.23.0.dev20250609+cu118-cp311-cp311-win_amd64.whl packages\torch-2.8.0.dev20250608+cu118-cp311-cp311-win_amd64.whl --quiet
 
 echo  ::  %time:~0,8%  ::  - Patching numpy version in requirements.txt
 powershell -NoProfile -ExecutionPolicy Bypass -Command " $p = 'requirements.txt'; $lines = Get-Content -LiteralPath $p; $map = @{ 'numpy'='numpy==1.*' }; $changed = $false; $out = foreach($line in $lines) { if ($line -match '^\s*(numpy)\b') { $pkg = $Matches[1]; $new = $map[$pkg]; if ($line -ne $new) { $changed = $true; Write-Host (' ::  %time:~0,8%  ::  - Updating requirements.txt: {0} -> {1}' -f $pkg, $new); }; $new } else { $line } }; if ($changed) { Set-Content -LiteralPath $p -Value $out -Encoding UTF8 } "
