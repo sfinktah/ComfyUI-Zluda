@@ -91,15 +91,14 @@ if !GPUCOUNT! LSS 1 (
             set "TRITON_OVERRIDE_ARCH=!GPU2!"
             echo  ::  %time:~0,8%  ::  - Selecting second architecture: !TRITON_OVERRIDE_ARCH!
         ) else (
-            rem Compare lexical order between the two reported architectures
-            if /I "!GPU2!" LSS "!GPU1!" (
-                echo  ::  %time:~0,8%  ::  - Detected two Radeon GPUs: !GPU1! and !GPU2!
-                echo  ::  %time:~0,8%  ::  - I'm a bit confused by the order, but it doesn't really matter; you can set the correct GPU in comfyui-n.bat later.
-                set "TRITON_OVERRIDE_ARCH=!GPU2!"
-                echo  ::  %time:~0,8%  ::  - Selecting second architecture: !TRITON_OVERRIDE_ARCH!
-            ) else (
+            rem Select the greater architecture (lexical) as the discrete GPU
+            if /I "!GPU2!" GTR "!GPU1!" (
                 echo  ::  %time:~0,8%  ::  - Detected integrated Radeon graphics: !GPU1! and discrete Radeon GPU: !GPU2!
                 set "TRITON_OVERRIDE_ARCH=!GPU2!"
+                echo  ::  %time:~0,8%  ::  - Selecting discrete GPU architecture: !TRITON_OVERRIDE_ARCH!
+            ) else (
+                echo  ::  %time:~0,8%  ::  - Detected integrated Radeon graphics: !GPU2! and discrete Radeon GPU: !GPU1!
+                set "TRITON_OVERRIDE_ARCH=!GPU1!"
                 echo  ::  %time:~0,8%  ::  - Selecting discrete GPU architecture: !TRITON_OVERRIDE_ARCH!
             )
         )
@@ -165,8 +164,8 @@ if not exist "packages\torch-2.8.0.dev20250608+cu118-cp311-cp311-win_amd64.whl" 
 echo  ::  %time:~0,8%  ::  - Installing torch packages
 pip install --force-reinstall packages\torchaudio-2.8.0.dev20250609+cu118-cp311-cp311-win_amd64.whl packages\torchvision-0.23.0.dev20250609+cu118-cp311-cp311-win_amd64.whl packages\torch-2.8.0.dev20250608+cu118-cp311-cp311-win_amd64.whl --quiet
 
-echo  ::  %time:~0,8%  ::  - Patching numpy version in requirements.txt
-powershell -NoProfile -ExecutionPolicy Bypass -Command " $p = 'requirements.txt'; $lines = Get-Content -LiteralPath $p; $map = @{ 'numpy'='numpy==1.*' }; $changed = $false; $out = foreach($line in $lines) { if ($line -match '^\s*(numpy)\b') { $pkg = $Matches[1]; $new = $map[$pkg]; if ($line -ne $new) { $changed = $true; Write-Host (' ::  %time:~0,8%  ::  - Updating requirements.txt: {0} -> {1}' -f $pkg, $new); }; $new } else { $line } }; if ($changed) { Set-Content -LiteralPath $p -Value $out -Encoding UTF8 } "
+:: echo  ::  %time:~0,8%  ::  - Patching numpy version in requirements.txt
+:: powershell -NoProfile -ExecutionPolicy Bypass -Command " $p = 'requirements.txt'; $lines = Get-Content -LiteralPath $p; $map = @{ 'numpy'='numpy==1.*' }; $changed = $false; $out = foreach($line in $lines) { if ($line -match '^\s*(numpy)\b') { $pkg = $Matches[1]; $new = $map[$pkg]; if ($line -ne $new) { $changed = $true; Write-Host (' ::  %time:~0,8%  ::  - Updating requirements.txt: {0} -> {1}' -f $pkg, $new); }; $new } else { $line } }; if ($changed) { Set-Content -LiteralPath $p -Value $out -Encoding UTF8 } "
 :: powershell -NoProfile -ExecutionPolicy Bypass -Command " $p = 'requirements.txt'; $lines = Get-Content -LiteralPath $p; $map = @{ 'numpy'='numpy==1.*'; 'torch'='torch==2.8.0.dev20250610+cu118'; 'torchaudio'='torchaudio==2.8.0.dev20250609+cu118'; 'torchvision'='torchvision==0.23.0.dev20250609+cu118' }; $changed = $false; $out = foreach($line in $lines) { if ($line -match '^\s*(numpy|torch|torchaudio|torchvision)\b') { $pkg = $Matches[1]; $new = $map[$pkg]; if ($line -ne $new) { $changed = $true; Write-Host (' ::  %time:~0,8%  ::  - Updating requirements.txt: {0} -> {1}' -f $pkg, $new); }; $new } else { $line } }; if ($changed) { Set-Content -LiteralPath $p -Value $out -Encoding UTF8 } "
 :: powershell -NoProfile -ExecutionPolicy Bypass -Command " $p='requirements.txt'; $lines=Get-Content -LiteralPath $p; $changed=$false; $out=@(); foreach($line in $lines){ if($line -match '^\s*(numpy|torch|torchaudio|torchvision|torchsde)\b'){ $pkg=$Matches[1].ToLower(); if($pkg -eq 'numpy'){ $new='numpy==1.*'; if($line -ne $new){ $changed=$true; Write-Host (' ::  %time:~0,8%  ::  - Updating requirements.txt: {0} -> {1}' -f $pkg, $new); } $out += $new } else { if($line.Trim().Length -gt 0){ $changed=$true; Write-Host (' ::  %time:~0,8%  ::  - Removing {0} from requirements.txt' -f $pkg) } $out += '' } } else { $out += $line } } if($changed){ Set-Content -LiteralPath $p -Value $out -Encoding UTF8 } "
 :: powershell -NoProfile -ExecutionPolicy Bypass -Command " $p='requirements.txt'; $lines=Get-Content -LiteralPath $p; $changed=$false; $out=@(); foreach($line in $lines){ if($line -match '^\s*(numpy|torch|torchaudio|torchvision)\b'){ $pkg=$Matches[1].ToLower(); if($pkg -eq 'numpy'){ $new='numpy==1.*'; if($line -ne $new){ $changed=$true; Write-Host (' ::  %time:~0,8%  ::  - Updating requirements.txt: {0} -> {1}' -f $pkg, $new); } $out += $new } else { if($line.Trim().Length -gt 0){ $changed=$true; Write-Host (' ::  %time:~0,8%  ::  - Removing {0} from requirements.txt' -f $pkg) } $out += '' } } else { $out += $line } } if($changed){ Set-Content -LiteralPath $p -Value $out -Encoding UTF8 } "
