@@ -133,7 +133,8 @@ pip install --force-reinstall --pre torch --index-url https://download.pytorch.o
 ::   torchaudio 2.7.0+cu118 requires torch==2.7.0+cu118, but you have torch 2.8.0.dev20250610+cu118 which is incompatible.
 ::   torchvision 0.22.0+cu118 requires torch==2.7.0+cu118, but you have torch 2.8.0.dev20250610+cu118 which is incompatible.
 pip install --force-reinstall --pre torchaudio torchvision --index-url https://download.pytorch.org/whl/nightly/cu118 --no-deps --quiet
-pip install numpy==1.* pillow yaml --quiet
+pip install numpy==1.* pillow scipy trampoline --quiet
+pip install torchsde --no-deps
 
 :: install pytorch 2.7.1 for cuda11.8
 :: pip install --force-reinstall --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118 --quiet
@@ -141,10 +142,13 @@ pip install numpy==1.* pillow yaml --quiet
 :: pip install torch==2.7.0 torchvision==0.22.0 torchaudio==2.7.0 --index-url https://download.pytorch.org/whl/cu118 --quiet
 
 echo  ::  %time:~0,8%  ::  - Updating requirements.txt pins for torch stack
-powershell -NoProfile -ExecutionPolicy Bypass -Command " $p='requirements.txt'; $lines=Get-Content -LiteralPath $p; $changed=$false; $out=@(); foreach($line in $lines){ if($line -match '^\s*(numpy|torch|torchaudio|torchvision)\b'){ $pkg=$Matches[1].ToLower(); if($pkg -eq 'numpy'){ $new='numpy==1.*'; if($line -ne $new){ $changed=$true; Write-Host (' ::  %time:~0,8%  ::  - Updating requirements.txt: {0} -> {1}' -f $pkg, $new); } $out += $new } else { if($line.Trim().Length -gt 0){ $changed=$true; Write-Host (' ::  %time:~0,8%  ::  - Removing {0} from requirements.txt' -f $pkg) } $out += '' } } else { $out += $line } } if($changed){ Set-Content -LiteralPath $p -Value $out -Encoding UTF8 } "
+:: powershell -NoProfile -ExecutionPolicy Bypass -Command " $p = 'requirements.txt'; $lines = Get-Content -LiteralPath $p; $map = @{ 'numpy'='numpy==1.*'; 'torch'='torch==2.8.0.dev20250610+cu118'; 'torchaudio'='torchaudio==2.8.0.dev20250609+cu118'; 'torchvision'='torchvision==0.23.0.dev20250609+cu118' }; $changed = $false; $out = foreach($line in $lines) { if ($line -match '^\s*(numpy|torch|torchaudio|torchvision)\b') { $pkg = $Matches[1]; $new = $map[$pkg]; if ($line -ne $new) { $changed = $true; Write-Host (' ::  %time:~0,8%  ::  - Updating requirements.txt: {0} -> {1}' -f $pkg, $new); }; $new } else { $line } }; if ($changed) { Set-Content -LiteralPath $p -Value $out -Encoding UTF8 } "
+powershell -NoProfile -ExecutionPolicy Bypass -Command " $p='requirements.txt'; $lines=Get-Content -LiteralPath $p; $changed=$false; $out=@(); foreach($line in $lines){ if($line -match '^\s*(numpy|torch|torchaudio|torchvision|torchsde)\b'){ $pkg=$Matches[1].ToLower(); if($pkg -eq 'numpy'){ $new='numpy==1.*'; if($line -ne $new){ $changed=$true; Write-Host (' ::  %time:~0,8%  ::  - Updating requirements.txt: {0} -> {1}' -f $pkg, $new); } $out += $new } else { if($line.Trim().Length -gt 0){ $changed=$true; Write-Host (' ::  %time:~0,8%  ::  - Removing {0} from requirements.txt' -f $pkg) } $out += '' } } else { $out += $line } } if($changed){ Set-Content -LiteralPath $p -Value $out -Encoding UTF8 } "
+:: powershell -NoProfile -ExecutionPolicy Bypass -Command " $p='requirements.txt'; $lines=Get-Content -LiteralPath $p; $changed=$false; $out=@(); foreach($line in $lines){ if($line -match '^\s*(numpy|torch|torchaudio|torchvision)\b'){ $pkg=$Matches[1].ToLower(); if($pkg -eq 'numpy'){ $new='numpy==1.*'; if($line -ne $new){ $changed=$true; Write-Host (' ::  %time:~0,8%  ::  - Updating requirements.txt: {0} -> {1}' -f $pkg, $new); } $out += $new } else { if($line.Trim().Length -gt 0){ $changed=$true; Write-Host (' ::  %time:~0,8%  ::  - Removing {0} from requirements.txt' -f $pkg) } $out += '' } } else { $out += $line } } if($changed){ Set-Content -LiteralPath $p -Value $out -Encoding UTF8 } "
 
 echo  ::  %time:~0,8%  ::  - Installing required packages
 pip install -r requirements.txt
+pip install --force-reinstall --pre torchaudio torchvision --index-url https://download.pytorch.org/whl/nightly/cu118 --no-deps --quiet
 echo  ::  %time:~0,8%  ::  - Installing onnxruntime (required by some nodes)
 pip install onnxruntime --quiet
 echo  ::  %time:~0,8%  ::  - (temporary numpy fix)
