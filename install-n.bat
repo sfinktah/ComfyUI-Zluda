@@ -66,8 +66,45 @@ echo %ESC%[96m║%ESC%[0m %ESC%[94m  │%ESC%[0m %ESC%[97m        Powered by ZLU
 echo %ESC%[96m║%ESC%[0m %ESC%[94m  └─────────────────────────────────────────────────────────────────────┘   %ESC%[0m %ESC%[96m║%ESC%[0m
 echo %ESC%[96m╚══════════════════════════════════════════════════════════════════════════════╝%ESC%[0m
 echo.
-for /f "tokens=*" %%i in ('"%HIP_PATH%bin\amdgpu-arch.exe"') do set TRITON_OVERRIDE_ARCH=%%i
-echo Detected: %TRITON_OVERRIDE_ARCH%
+REM Detect AMD GPU architectures and choose appropriate one
+set "GPU1="
+set "GPU2="
+set "GPUCOUNT=0"
+for /f "delims=" %%A in ('"%HIP_PATH%bin\amdgpu-arch.exe"') do (
+    set /a GPUCOUNT+=1
+    if !GPUCOUNT! EQU 1 set "GPU1=%%A"
+    if !GPUCOUNT! EQU 2 set "GPU2=%%A"
+)
+if !GPUCOUNT! LSS 1 (
+    echo  ::  %time:~0,8%  ::  - WARNING: Unable to detect AMD GPU architecture.
+) else if !GPUCOUNT! EQU 1 (
+    set "TRITON_OVERRIDE_ARCH=!GPU1!"
+    echo  ::  %time:~0,8%  ::  - Detected GPU architecture: !TRITON_OVERRIDE_ARCH!
+) else (
+    if !GPUCOUNT! GTR 2 (
+        echo  ::  %time:~0,8%  ::  - OMG how many GPU do you have, I hate you so much.
+        set "TRITON_OVERRIDE_ARCH=!GPU2!"
+        echo  ::  %time:~0,8%  ::  - Selecting second architecture: !TRITON_OVERRIDE_ARCH!
+    ) else (
+        if /I "!GPU1!"=="!GPU2!" (
+            echo  ::  %time:~0,8%  ::  - OMG how many GPU do you have, I hate you so much.
+            set "TRITON_OVERRIDE_ARCH=!GPU2!"
+            echo  ::  %time:~0,8%  ::  - Selecting second architecture: !TRITON_OVERRIDE_ARCH!
+        ) else (
+            rem Compare lexical order between the two reported architectures
+            if /I "!GPU2!" LSS "!GPU1!" (
+                echo  ::  %time:~0,8%  ::  - Detected two Radeon GPUs: !GPU1! and !GPU2!
+                echo  ::  %time:~0,8%  ::  - I'm a bit confused by the order, but it doesn't really matter; you can set the correct GPU in comfyui-n.bat later.
+                set "TRITON_OVERRIDE_ARCH=!GPU2!"
+                echo  ::  %time:~0,8%  ::  - Selecting second architecture: !TRITON_OVERRIDE_ARCH!
+            ) else (
+                echo  ::  %time:~0,8%  ::  - Detected integrated Radeon graphics: !GPU1! and discrete Radeon GPU: !GPU2!
+                set "TRITON_OVERRIDE_ARCH=!GPU2!"
+                echo  ::  %time:~0,8%  ::  - Selecting discrete GPU architecture: !TRITON_OVERRIDE_ARCH!
+            )
+        )
+    )
+)
 echo.
 
 pause
@@ -130,7 +167,7 @@ if "%PY_MINOR%"=="12" (
     pip install --force-reinstall https://github.com/lshqqytiger/triton/releases/download/a9c80202/triton-3.4.0+gita9c80202-cp312-cp312-win_amd64.whl --quiet
 ) else if "%PY_MINOR%"=="11" (
     echo  ::  %time:~0,8%  ::  - Python 3.11 detected, installing triton for 3.11
-    pip install --force-reinstall https://github.com/lshqqytiger/triton/releases/download/a9c80202/triton-3.4.0+gita9c80202-cp311-cp311-win_amd64.whl --quiet
+    pip install --force-reinstall https://github.com/lshqqytiger/triton/releases/download/a9c80202/triton-3.4.0+gita9c80202-cp311-cp311-win_amd64.whl
 ) else (
     echo  ::  %time:~0,8%  ::  - WARNING: Unsupported Python version 3.%PY_MINOR%, skipping triton installation
     echo  ::  %time:~0,8%  ::  - Full version info:
