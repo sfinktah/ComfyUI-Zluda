@@ -96,7 +96,7 @@ pip install --force-reinstall --pre torch --index-url https://download.pytorch.o
 ::   torchaudio 2.7.0+cu118 requires torch==2.7.0+cu118, but you have torch 2.8.0.dev20250610+cu118 which is incompatible.
 ::   torchvision 0.22.0+cu118 requires torch==2.7.0+cu118, but you have torch 2.8.0.dev20250610+cu118 which is incompatible.
 pip install --force-reinstall --pre torchaudio torchvision --index-url https://download.pytorch.org/whl/nightly/cu118 --no-deps
-pip install numpy==1.* pillow
+pip install numpy==1.* pillow yaml
 
 :: install pytorch 2.7.1 for cuda11.8
 :: pip install --force-reinstall --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118 --quiet
