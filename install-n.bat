@@ -90,13 +90,13 @@ echo  ::  %time:~0,8%  ::  - Installing torch for AMD GPUs (First file is 2.7 GB
 :: install pytorch 2.8.0 for cuda11.8 (currently broken, due to issue with pytorch nightly repo)
 :: pip install --force-reinstall torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu118
 
-pip install --force-reinstall --pre torch --index-url https://download.pytorch.org/whl/nightly/cu118
+pip install --force-reinstall --pre torch --index-url https://download.pytorch.org/whl/nightly/cu118 --quiet
 :: Ignore these errors
 ::   ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
 ::   torchaudio 2.7.0+cu118 requires torch==2.7.0+cu118, but you have torch 2.8.0.dev20250610+cu118 which is incompatible.
 ::   torchvision 0.22.0+cu118 requires torch==2.7.0+cu118, but you have torch 2.8.0.dev20250610+cu118 which is incompatible.
-pip install --force-reinstall --pre torchaudio torchvision --index-url https://download.pytorch.org/whl/nightly/cu118 --no-deps
-pip install numpy==1.* pillow yaml
+pip install --force-reinstall --pre torchaudio torchvision --index-url https://download.pytorch.org/whl/nightly/cu118 --no-deps --quiet
+pip install numpy==1.* pillow yaml --quiet
 
 :: install pytorch 2.7.1 for cuda11.8
 :: pip install --force-reinstall --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118 --quiet
@@ -112,7 +112,7 @@ pip install -r requirements.txt --quiet
 echo  ::  %time:~0,8%  ::  - Installing onnxruntime (required by some nodes)
 pip install onnxruntime --quiet
 echo  ::  %time:~0,8%  ::  - (temporary numpy fix)
-pip install --force-reinstall numpy==1.*
+pip install --force-reinstall numpy==1.* --quiet
 
 echo  ::  %time:~0,8%  ::  - Detecting Python version and installing appropriate triton package
 for /f "tokens=2 delims=." %%a in ('python -c "import sys; print(sys.version)"') do (
@@ -123,10 +123,10 @@ for /f "tokens=2 delims=." %%a in ('python -c "import sys; print(sys.version)"')
 
 if "%PY_MINOR%"=="12" (
     echo  ::  %time:~0,8%  ::  - Python 3.12 detected, installing triton for 3.12
-    pip install --force-reinstall https://github.com/lshqqytiger/triton/releases/download/a9c80202/triton-3.4.0+gita9c80202-cp312-cp312-win_amd64.whl
+    pip install --force-reinstall https://github.com/lshqqytiger/triton/releases/download/a9c80202/triton-3.4.0+gita9c80202-cp312-cp312-win_amd64.whl --quiet
 ) else if "%PY_MINOR%"=="11" (
     echo  ::  %time:~0,8%  ::  - Python 3.11 detected, installing triton for 3.11
-    pip install --force-reinstall https://github.com/lshqqytiger/triton/releases/download/a9c80202/triton-3.4.0+gita9c80202-cp311-cp311-win_amd64.whl
+    pip install --force-reinstall https://github.com/lshqqytiger/triton/releases/download/a9c80202/triton-3.4.0+gita9c80202-cp311-cp311-win_amd64.whl --quiet
 ) else (
     echo  ::  %time:~0,8%  ::  - WARNING: Unsupported Python version 3.%PY_MINOR%, skipping triton installation
     echo  ::  %time:~0,8%  ::  - Full version string:
