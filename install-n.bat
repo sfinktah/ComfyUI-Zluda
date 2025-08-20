@@ -180,6 +180,7 @@ if "%PY_MINOR%"=="12" (
 :: patching triton & torch (from sfinktah ; https://github.com/sfinktah/amd-torch )
 pip install --force-reinstall pypatch-url --quiet
 pypatch-url apply https://raw.githubusercontent.com/sfinktah/amd-torch/refs/heads/main/patches/triton-3.4.0+gita9c80202-cp311-cp311-win_amd64.patch -p 4 triton
+pypatch-url apply https://raw.githubusercontent.com/sfinktah/amd-torch/refs/heads/main/patches/torch-2.8.0.dev20250610+cu118-cp311-cp311-win_amd64.patch -p 4 torch
 
 :: dont do this if you aren't installing pytorch 2.7  (only tested with 2.7.0, should work with 2.7.1 but haven't tested)
 :: pypatch-url apply https://raw.githubusercontent.com/sfinktah/amd-torch/refs/heads/main/patches/torch-2.7.0+cu118-cp311-cp311-win_amd64.patch -p 4 torch
