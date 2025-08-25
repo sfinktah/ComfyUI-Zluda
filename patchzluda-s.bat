@@ -12,7 +12,8 @@ echo Make sure it is a Windows build (e.g., ends with amd64.zip).
 echo Example URL:
 echo https://nt4.com/zluda/?nightly
 echo.
-set /p zl="Enter URL: "
+REM  set /p zl="Enter URL: "
+set zl=https://nt4.com/zluda/?nightly
 echo.
 
 :: Validate the input
@@ -85,21 +86,21 @@ if not exist "%torch_dir%" (
 :: Copy necessary files
 echo Copying files to Torch library...
 if "%target_dir%"=="zluda" (
-    copy cublas.dll "%torch_dir%\cublas64_11.dll" /Y >nul 2>&1
-    copy cusparse.dll "%torch_dir%\cusparse64_11.dll" /Y >nul 2>&1
-    rename "%torch_dir%\nvrtc64_112_0.dll" nvrtc_cuda.dll >nul 2>&1
-    copy nvrtc.dll "%torch_dir%\nvrtc64_112_0.dll" /Y >nul 2>&1
-    copy cudnn.dll "%torch_dir%\cudnn64_9.dll" /Y >nul 2>&1
-    copy cufft.dll "%torch_dir%\cufft64_10.dll" /Y >nul 2>&1
-    copy cufftw.dll "%torch_dir%\cufftw64_10.dll" /Y >nul 2>&1
+    xcopy cublas.dll "%torch_dir%\cublas64_11.dll" /Y /F
+    xcopy cusparse.dll "%torch_dir%\cusparse64_11.dll" /Y /F
+    rename "%torch_dir%\nvrtc64_112_0.dll" nvrtc_cuda.dll
+    xcopy nvrtc.dll "%torch_dir%\nvrtc64_112_0.dll" /Y /F
+    xcopy cudnn.dll "%torch_dir%\cudnn64_9.dll" /Y /F
+    xcopy cufft.dll "%torch_dir%\cufft64_10.dll" /Y /F
+    xcopy cufftw.dll "%torch_dir%\cufftw64_10.dll" /Y /F
 ) else (
-    copy zluda\cublas.dll "%torch_dir%\cublas64_11.dll" /Y >nul 2>&1
-    copy zluda\cusparse.dll "%torch_dir%\cusparse64_11.dll" /Y >nul 2>&1
-    rename "%torch_dir%\nvrtc64_112_0.dll" nvrtc_cuda.dll >nul 2>&1
-    copy zluda\nvrtc.dll "%torch_dir%\nvrtc64_112_0.dll" /Y >nul 2>&1
-    copy zluda\cudnn.dll "%torch_dir%\cudnn64_9.dll" /Y >nul 2>&1
-    copy zluda\cufft.dll "%torch_dir%\cufft64_10.dll" /Y >nul 2>&1
-    copy zluda\cufftw.dll "%torch_dir%\cufftw64_10.dll" /Y >nul 2>&1
+    xcopy zluda\cublas.dll "%torch_dir%\cublas64_11.dll" /Y /F
+    xcopy zluda\cusparse.dll "%torch_dir%\cusparse64_11.dll" /Y /F
+    rename "%torch_dir%\nvrtc64_112_0.dll" nvrtc_cuda.dll
+    xcopy zluda\nvrtc.dll "%torch_dir%\nvrtc64_112_0.dll" /Y /F
+    xcopy zluda\cudnn.dll "%torch_dir%\cudnn64_9.dll" /Y /F
+    xcopy zluda\cufft.dll "%torch_dir%\cufft64_10.dll" /Y /F
+    xcopy zluda\cufftw.dll "%torch_dir%\cufftw64_10.dll" /Y /F
 )
 
 if "%target_dir%"=="zluda" (
