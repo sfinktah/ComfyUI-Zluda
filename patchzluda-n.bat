@@ -10,7 +10,7 @@ echo :: Uninstalling previous torch packages
 pip uninstall torch torchvision torchaudio -y --quiet
 rmdir /S /Q "venv\Lib\site-packages\torch" 2>nul
 echo :: Installing torch 2.7 - torchaudio 2.7 and torchvision 0.22
-pip install torch==2.7.0 torchvision==0.22.0 torchaudio==2.7.0 --index-url https://download.pytorch.org/whl/cu118 --quiet
+pip install torch==2.7.1 torchvision==0.22.0 torchaudio==2.7.1 --index-url https://download.pytorch.org/whl/cu118 --quiet
 rmdir /S /Q zluda 2>nul
 mkdir zluda
 cd zluda
