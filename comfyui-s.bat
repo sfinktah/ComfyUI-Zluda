@@ -35,6 +35,10 @@ set TORCH_BACKENDS_CUDNN_ENABLED=1
 :: Fix for cublasLt errors on newer ZLUDA (if no hipblaslt)
 set DISABLE_ADDMM_CUDA_LT=1
 
+:: Activate python venv
+call %~dp0venv\Scripts\activate
+
+
 if not defined HIP_PATH (
     echo  ::  %time:~0,8%  ::  - ERROR: HIP_PATH is not set or empty.
     echo  ::  %time:~0,8%  ::  - Please install HIP SDK from like... anywhere, including but not limited to:
