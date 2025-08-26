@@ -27,7 +27,7 @@ class CUDNNToggleAutoPassthrough:
         }
 
     RETURN_TYPES = ("MODEL", "CONDITIONING", "LATENT", "AUDIO", "IMAGE", "WANVIDEOMODEL", anyType, "BOOLEAN", "BOOLEAN")
-    RETURN_NAMES = ("model", "conditioning", "latent", "audio", "image", "wan_model", "any_output", "prev_cudnn", "prev_benchmark")
+    RETURN_NAMES = ("model", "conditioning", "latent", "audio", "image", "wan_model", "any_output", "prev_cudnn")
     FUNCTION = "toggle"
     CATEGORY = "utils"
 
