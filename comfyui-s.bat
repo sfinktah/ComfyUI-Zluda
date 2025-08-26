@@ -249,11 +249,9 @@ set COMMANDLINE_ARGS=%*
 
 set ZLUDA_COMGR_LOG_LEVEL=1
 
-echo *** NOT Checking and updating to new version if possible BECAUSE patientx has gone inCUDNNsane.
-
-:: copy comfy\customzluda\zluda-default.py comfy\zluda.py /y >NUL
-:: git pull
-:: copy comfy\customzluda\zluda.py comfy\zluda.py /y >NUL
+copy comfy\customzluda\zluda-default.py comfy\zluda.py /y >NUL
+git pull
+copy comfy\customzluda\zluda.py comfy\zluda.py /y >NUL
 
 echo.
 .\zluda\zluda.exe -- %PYTHON% main.py %COMMANDLINE_ARGS%
