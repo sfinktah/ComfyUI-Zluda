@@ -23,7 +23,6 @@ class CUDNNToggleAutoPassthrough:
             },
             "required": {
                 "enable_cudnn": ("BOOLEAN", {"default": True}),
-                "cudnn_benchmark": ("BOOLEAN", {"default": False}),
             },
         }
 
@@ -32,22 +31,22 @@ class CUDNNToggleAutoPassthrough:
     FUNCTION = "toggle"
     CATEGORY = "utils"
 
-    def toggle(self, enable_cudnn, cudnn_benchmark, any_input=None, wan_model=None, model=None, conditioning=None, latent=None, audio=None, image=None):
+    def toggle(self, enable_cudnn, any_input=None, wan_model=None, model=None, conditioning=None, latent=None, audio=None, image=None):
         prev_cudnn = torch.backends.cudnn.enabled
         prev_benchmark = torch.backends.cudnn.benchmark
         torch.backends.cudnn.enabled = enable_cudnn
-        torch.backends.cudnn.benchmark = cudnn_benchmark
+        torch.backends.cudnn.benchmark = enable_cudnn
         if enable_cudnn != prev_cudnn:
             print(f"[CUDNN_TOGGLE] torch.backends.cudnn.enabled set to {enable_cudnn} (was {prev_cudnn})")
         else:
             print(f"[CUDNN_TOGGLE] torch.backends.cudnn.enabled still set to {enable_cudnn}")
 
-        if cudnn_benchmark != prev_benchmark:
-            print(f"[CUDNN_TOGGLE] torch.backends.cudnn.benchmark set to {cudnn_benchmark} (was {prev_benchmark})")
+        if enable_cudnn != prev_benchmark:
+            print(f"[CUDNN_TOGGLE] torch.backends.cudnn.benchmark set to {enable_cudnn} (was {prev_benchmark})")
         else:
-            print(f"[CUDNN_TOGGLE] torch.backends.cudnn.benchmark still set to {cudnn_benchmark}")
+            print(f"[CUDNN_TOGGLE] torch.backends.cudnn.benchmark still set to {enable_cudnn}")
 
-        return_tuple = (model, conditioning, latent, audio, image, wan_model, any_input, prev_cudnn, prev_benchmark)
+        return_tuple = (model, conditioning, latent, audio, image, wan_model, any_input, prev_cudnn)
         return return_tuple
 
 NODE_CLASS_MAPPINGS = {
