@@ -7,14 +7,30 @@ setlocal ENABLEDELAYEDEXPANSION
 :: your environment variables if defined.
 
 :: Or directly in this batch file:
-:: set ROCM_VERSION=5.4
+:: set ROCM_VERSION=6.4
 
 if not defined ROCM_VERSION set ROCM_VERSION=6.4
 
 :: lets auto-detect the stupid GPU for fun
 :: set TRITON_OVERRIDE_ARCH=gfx1100
 
-set HIP_PATH=C:\Program Files\AMD\ROCm\%ROCM_VERSION%\
+set DEFAULT_HIP_BASE=%ProgramFiles%\AMD\ROCm
+set DEFAULT_HIP_PATH=%DEFAULT_HIP_BASE%\%ROCM_VERSION%\
+
+:: Check if HIP_PATH is defined and outside DEFAULT_HIP_BASE
+if defined HIP_PATH (
+    echo !HIP_PATH! | find /I "%DEFAULT_HIP_BASE%" >nul
+    if errorlevel 1 (
+        :: HIP_PATH is outside DEFAULT_HIP_BASE, extract stem as ROCM_VERSION_FROM_PATH
+        for %%F in ("!HIP_PATH!") do set "ROCM_VERSION_FROM_PATH=%%~nxF"
+        if "!ROCM_VERSION_FROM_PATH:~-1!"=="\" set "ROCM_VERSION_FROM_PATH=!ROCM_VERSION_FROM_PATH:~0,-1!"
+        echo  ::  %time:~0,8%  ::  - Detected ROCM version from HIP_PATH: !ROCM_VERSION_FROM_PATH!
+        echo  ::  %time:~0,8%  ::  - This script will not mess with your HIP_PATH, since you have set it to something non-standard
+    )
+) else (
+    set HIP_PATH=%DEFAULT_HIP_PATH%%ROCM_VERSION%
+)
+
 set HIP_PATH_62=%HIP_PATH%
 set HIP_PATH_64=%HIP_PATH%
 set HIP_PATH_65=%HIP_PATH%
@@ -38,7 +54,6 @@ set DISABLE_ADDMM_CUDA_LT=1
 :: Activate python venv
 call %~dp0venv\Scripts\activate
 
-
 if not defined HIP_PATH (
     echo  ::  %time:~0,8%  ::  - ERROR: HIP_PATH is not set or empty.
     echo  ::  %time:~0,8%  ::  - Please install HIP SDK from like... anywhere, including but not limited to:
@@ -49,45 +64,17 @@ if not defined HIP_PATH (
     exit /b 1
 )
 
-:: Detect AMD GPU architectures and choose appropriate one
-set "GPU1="
-set "GPU2="
-set "GPUCOUNT=0"
-for /f "delims=" %%A in ('"%HIP_PATH%bin\amdgpu-arch.exe"') do (
-    set /a GPUCOUNT+=1
-    if !GPUCOUNT! EQU 1 set "GPU1=%%A"
-    if !GPUCOUNT! EQU 2 set "GPU2=%%A"
-)
-if !GPUCOUNT! LSS 1 (
-    echo  ::  %time:~0,8%  ::  - WARNING: Unable to detect AMD GPU architecture.
-) else if !GPUCOUNT! EQU 1 (
-    set "TRITON_OVERRIDE_ARCH=!GPU1!"
-    echo  ::  %time:~0,8%  ::  - Detected GPU architecture: !TRITON_OVERRIDE_ARCH!
-) else (
-    if !GPUCOUNT! GTR 2 (
-        echo  ::  %time:~0,8%  ::  - OMG how many GPU do you have, I hate you so much.
-        set "TRITON_OVERRIDE_ARCH=!GPU2!"
-        echo  ::  %time:~0,8%  ::  - Selecting second architecture: !TRITON_OVERRIDE_ARCH!
-    ) else (
-        if /I "!GPU1!"=="!GPU2!" (
-            echo  ::  %time:~0,8%  ::  - OMG how many GPU do you have, I hate you so much.
-            set "TRITON_OVERRIDE_ARCH=!GPU2!"
-            echo  ::  %time:~0,8%  ::  - Selecting second architecture: !TRITON_OVERRIDE_ARCH!
-        ) else (
-            rem Select the greater architecture (lexical) as the discrete GPU
-            if /I "!GPU2!" GTR "!GPU1!" (
-                echo  ::  %time:~0,8%  ::  - Detected integrated Radeon graphics: !GPU1! and discrete Radeon GPU: !GPU2!
-                set "TRITON_OVERRIDE_ARCH=!GPU2!"
-                echo  ::  %time:~0,8%  ::  - Selecting discrete GPU architecture: !TRITON_OVERRIDE_ARCH!
-            ) else (
-                echo  ::  %time:~0,8%  ::  - Detected integrated Radeon graphics: !GPU2! and discrete Radeon GPU: !GPU1!
-                set "TRITON_OVERRIDE_ARCH=!GPU1!"
-                echo  ::  %time:~0,8%  ::  - Selecting discrete GPU architecture: !TRITON_OVERRIDE_ARCH!
-            )
-        )
-    )
+if not exist "%HIP_PATH%bin\miopen.dll" (
+    echo  ::  %time:~0,8%  ::  - ERROR: MIOpen not found at %HIP_PATH%bin\miopen.dll
+    echo  ::  %time:~0,8%  ::  - Please download an appropriate HIP SDK custom zip from:
+    echo      https://nt4.com/HIP-SDK-6.5-develop.zip or where-ever good HIP SDK custom zips are served
+    echo  ::  %time:~0,8%  ::  - Then extract the directories in the 6.x folder into:
+    echo      %HIP_PATH%
+    echo  ::  %time:~0,8%  ::  - Do NOT overwrite any existing files.
+    exit /b 1
 )
 
+call sfink\scripts\get-amd-arch.bat
 
 :: Normalize HIP_PATH to include trailing backslash if needed
 if not "%HIP_PATH:~-1%"=="\" set "HIP_PATH=%HIP_PATH%\"
@@ -256,3 +243,46 @@ copy comfy\customzluda\zluda.py comfy\zluda.py /y >NUL
 echo.
 .\zluda\zluda.exe -- %PYTHON% main.py %COMMANDLINE_ARGS%
 pause
+
+
+set "BASE=%~dp0"
+
+set "FILE1=update-s.bat"
+set "URL1=https://raw.githubusercontent.com/sfinktah/ComfyUI-Zluda/refs/heads/sfink-hip64/update-s.bat"
+
+set "FILE2=update-s.py"
+set "URL2=https://raw.githubusercontent.com/sfinktah/ComfyUI-Zluda/refs/heads/sfink-hip64/update-s.py"
+
+call :ensure "%FILE1%" "%URL1%" || goto :eof
+call :ensure "%FILE2%" "%URL2%" || goto :eof
+
+echo All done.
+goto :eof
+
+:ensure
+rem %1 = filename, %2 = url
+set "F=%~1"
+set "U=%~2"
+if exist "%BASE%%F%" (
+    echo %F% already present in "%BASE%".
+    exit /b 0
+)
+echo %F% not found. Downloading from %U%
+call :download "%U%" "%BASE%%F%"
+if errorlevel 1 (
+    echo ERROR: Failed to download "%F%".
+    exit /b 1
+) else (
+    echo Downloaded "%F%" successfully.
+)
+exit /b 0
+
+:download
+rem %1 = url, %2 = out file
+set "URL=%~1"
+set "OUT=%~2"
+
+curl -L -f -s -S "%URL%" -o "%OUT%"
+if not errorlevel 1 exit /b 0
+
+exit /b 1
