@@ -28,4 +28,5 @@ rem Update safe targets directly into current directory (non-batch files)
   --path update-s.py ^
   --path install-s.bat ^
   --path update-s.bat ^
-  --path comfyui-s.bat
+  --path comfyui-s.bat ^
+  --path sfink/scripts
