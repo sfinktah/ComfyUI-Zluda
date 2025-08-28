@@ -3,7 +3,7 @@ setlocal enableextensions
 
 rem Repository and branch to sync from
 set "REPO=sfinktah/comfyui-zluda"
-set "BRANCH=sfink-hip64"
+set "BRANCH=sfink-x"
 
 rem Work from the script's directory
 cd /d "%~dp0"

@@ -4,7 +4,10 @@ chcp 65001 >nul
 title ComfyUI-Zluda Installer
 
 set ZLUDA_COMGR_LOG_LEVEL=1
-set ESC=
+:: set ESC=
+if not defined ESC (
+    for /f "delims=" %%E in ('powershell -NoProfile -ExecutionPolicy Bypass -Command "$e=[char]27; $e"') do set "ESC=%%E"
+)
 
 setlocal EnableDelayedExpansion
 set "startTime=%time: =0%"

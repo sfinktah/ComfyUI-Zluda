@@ -1,20 +1,30 @@
 @echo off
 setlocal ENABLEDELAYEDEXPANSION
 
-:: Instructions: To set the ROCM_VERSION environment variable, 
-:: you can either define it in your system's environment variables or
-:: set it directly below. This script will use the ROCM_VERSION in
-:: your environment variables if defined.
-
 :: -----BEGIN USER SECTION-----
 :: Stuff inside this section will not be overwritten by update-s.bat
 
 :: anything left commented will take on a default value
-set ROCM_VERSION=6.2
+
+set ROCM_VERSION=6.4
 set COMMANDLINE_ARGS=%*
 
 :: You'll only need to uncomment and set this if auto-detect fails.
 :: set TRITON_OVERRIDE_ARCH=gfx1100
+
+:: anything left commented will take on a default value
+:: set TORCH_BACKENDS_CUDNN_ENABLED=1
+:: BENCHMARK might slow you during compilation, thought it MIGHT lead to faster results after
+:: set TORCH_BACKENDS_CUDNN_BENCHMARK=0
+:: set DISABLE_ADDMM_CUDA_LT=1
+:: set TRITON_PRINT_AUTOTUNING=1
+:: set TRITON_CACHE_AUTOTUNING=1
+:: set MIOPEN_LOG_LEVEL=3
+:: set MIOPEN_FIND_MODE=FAST
+:: set FLASH_ATTENTION_TRITON_AMD_AUTOTUNE=TRUE
+:: set FLASH_ATTENTION_TRITON_AMD_ENABLE=TRUE
+:: set FLASH_ATTENTION_TRITON_AMD_PERF=TRUE
+:: set ZLUDA_COMGR_LOG_LEVEL=1
 
 :: This is just for altering the cache names for quick tests, it means you can try weird things without messing
 :: up your regular cache.
@@ -76,13 +86,14 @@ set CXXFLAGS=-march=native -mtune=native
 if not defined TEST_FACTOR set TEST_FACTOR=none
 
 :: This will be for when patientx enables environment variable setting for cudnn.  It will be like the CUDNN node
-:: that you can toggle, except that it happens right at the very start.  (And you can still change it with the 
+:: that you can toggle, except that it happens right at the very start.  (And you can still change it with the
 :: toggle later).
-set TORCH_BACKENDS_CUDNN_ENABLED=1
-set TORCH_BACKENDS_CUDNN_HISTORY=1
+if not define TORCH_BACKENDS_CUDNN_ENABLED set TORCH_BACKENDS_CUDNN_ENABLED=1
+:: BENCHMARK might slow you during compilation, thought it MIGHT lead to faster results after
+if not define TORCH_BACKENDS_CUDNN_BENCHMARK set TORCH_BACKENDS_CUDNN_BENCHMARK=0
 
 :: Fix for cublasLt errors on newer ZLUDA (if no hipblaslt)
-set DISABLE_ADDMM_CUDA_LT=1
+if not define DISABLE_ADDMM_CUDA_LT set DISABLE_ADDMM_CUDA_LT=1
 
 :: Activate python venv
 call %~dp0venv\Scripts\activate
@@ -222,8 +233,8 @@ REM  call :EnsureJunction "%REAL_ZLUDA_CACHE%" "%ZLUDA_CACHE_DIR%"
 :: set TRITON_PTXAS_VERBOSE=1
 
 ::  These are real and the TRITON_CACHE_AUTOTUNING is important (if you don't want to be tuning all the time)
-set TRITON_PRINT_AUTOTUNING=1
-set TRITON_CACHE_AUTOTUNING=1
+if not define TRITON_PRINT_AUTOTUNING set TRITON_PRINT_AUTOTUNING=1
+if not define TRITON_CACHE_AUTOTUNING set TRITON_CACHE_AUTOTUNING=1
 
 :: Environment variables added to Triton by sfinktah, require appropriate triton patch.
 :: python 3.12: pip install --force-reinstall https://github.com/lshqqytiger/triton/releases/download/a9c80202/triton-3.4.0+gita9c80202-cp312-cp312-win_amd64.whl
@@ -246,28 +257,27 @@ set TRITON_CACHE_AUTOTUNING=1
 :: set SAGE_ATTENTION_WAVES_PER_EU={3,4}
 :: end sfinktah sageattention patches
 
-set MIOPEN_FIND_MODE=2
-set MIOPEN_LOG_LEVEL=3
+if not define MIOPEN_FIND_MODE set MIOPEN_FIND_MODE=2
+if not define MIOPEN_LOG_LEVEL set MIOPEN_LOG_LEVEL=3
 
 :: https://github.com/Beinsezii/comfyui-amd-go-fast
 set PYTORCH_TUNABLEOP_ENABLED=1 
-set MIOPEN_FIND_MODE=FAST
+if not define MIOPEN_FIND_MODE set MIOPEN_FIND_MODE=FAST
 
 :: Enabling this will cause rocm's amd triton flash-attn to look for CDNA optimisations (we have RDNA, so it will fail -- unless we patch flash attention of course :)
-set FLASH_ATTENTION_TRITON_AMD_AUTOTUNE=TRUE
-set FLASH_ATTENTION_TRITON_AMD_ENABLE=TRUE
+if not define FLASH_ATTENTION_TRITON_AMD_AUTOTUNE set FLASH_ATTENTION_TRITON_AMD_AUTOTUNE=TRUE
+if not define FLASH_ATTENTION_TRITON_AMD_ENABLE set FLASH_ATTENTION_TRITON_AMD_ENABLE=TRUE
 
-set FLASH_ATTENTION_TRITON_AMD_DEBUG=
-set FLASH_ATTENTION_TRITON_AMD_PERF=TRUE
+if not define FLASH_ATTENTION_TRITON_AMD_DEBUG set FLASH_ATTENTION_TRITON_AMD_DEBUG=
+if not define FLASH_ATTENTION_TRITON_AMD_PERF set FLASH_ATTENTION_TRITON_AMD_PERF=TRUE
 
 
 set PYTHON="%~dp0/venv/Scripts/python.exe"
-set GIT=
 set VENV_DIR=./venv
 
 if not defined COMMANDLINE_ARGS set COMMANDLINE_ARGS=%*
 
-set ZLUDA_COMGR_LOG_LEVEL=1
+if not define ZLUDA_COMGR_LOG_LEVEL set ZLUDA_COMGR_LOG_LEVEL=1
 
 copy comfy\customzluda\zluda-default.py comfy\zluda.py /y >NUL
 git pull
@@ -319,3 +329,7 @@ curl -L -f -s -S "%URL%" -o "%OUT%"
 if not errorlevel 1 exit /b 0
 
 exit /b 1
+
+
+
+setlocal ENABLEDELAYEDEXPANSION
