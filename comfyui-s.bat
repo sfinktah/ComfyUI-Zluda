@@ -6,13 +6,27 @@ setlocal ENABLEDELAYEDEXPANSION
 :: set it directly below. This script will use the ROCM_VERSION in
 :: your environment variables if defined.
 
+:: -----BEGIN USER SECTION-----
+:: Stuff inside this section will not be overwritten by update-s.bat
+
+:: anything left commented will take on a default value
+set ROCM_VERSION=6.4
+set COMMANDLINE_ARGS=%*
+
+:: You'll only need to uncomment and set this if auto-detect fails.
+:: set TRITON_OVERRIDE_ARCH=gfx1100
+
+
+
+:: end of user configurable section
+::-----END USER SECTION-----
+
 :: Or directly in this batch file:
 :: set ROCM_VERSION=6.4
 
 if not defined ROCM_VERSION set ROCM_VERSION=6.4
 
 :: lets auto-detect the stupid GPU for fun
-:: set TRITON_OVERRIDE_ARCH=gfx1100
 
 set DEFAULT_HIP_BASE=%ProgramFiles%\AMD\ROCm
 set DEFAULT_HIP_PATH=%DEFAULT_HIP_BASE%\%ROCM_VERSION%\
@@ -74,6 +88,7 @@ if not exist "%HIP_PATH%bin\miopen.dll" (
     exit /b 1
 )
 
+:: Autodetect the GPU and set TRITON_OVERRIDE_ARCH
 call sfink\scripts\get-amd-arch.bat
 
 :: Normalize HIP_PATH to include trailing backslash if needed
@@ -207,8 +222,7 @@ set TRITON_CACHE_AUTOTUNING=1
 :: set SAGE_ATTENTION_BLOCK_M=64
 :: set SAGE_ATTENTION_BLOCK_N=16
 :: set SAGE_ATTENTION_NUM_WARPS={2,4}
-:: :: set SAGE_ATTENTION_NUM_STAGES={1,2,4}
-:: set SAGE_ATTENTION_NUM_STAGES={1,3,4}
+:: set SAGE_ATTENTION_NUM_STAGES={1,2, 3,4}
 :: set SAGE_ATTENTION_STAGE=1
 :: set SAGE_ATTENTION_WAVES_PER_EU={3,4}
 :: end sfinktah sageattention patches
@@ -232,7 +246,7 @@ set PYTHON="%~dp0/venv/Scripts/python.exe"
 set GIT=
 set VENV_DIR=./venv
 
-set COMMANDLINE_ARGS=%*
+if not defined COMMANDLINE_ARGS set COMMANDLINE_ARGS=%*
 
 set ZLUDA_COMGR_LOG_LEVEL=1
 

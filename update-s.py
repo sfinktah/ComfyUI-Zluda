@@ -232,6 +232,97 @@ def atomic_write(path: str, data: bytes) -> None:
     else:
         os.rename(tmp_path, path)
 
+# Marker tokens for .bat files to preserve local content between them.
+# Usage in .bat files (case-insensitive, anywhere on the line, typically in comments):
+#   REM NO-UPDATE-START
+#   ... user-customized content to keep locally ...
+#   REM NO-UPDATE-END
+_BAT_MARKER_START = "-----BEGIN USER SECTION-----"
+_BAT_MARKER_END = "-----END USER SECTION-----"
+
+
+def _decode_text_best_effort(data: bytes) -> Tuple[str, str]:
+    """
+    Decode bytes to text with a reasonable fallback for Windows batch files.
+    Returns (text, encoding_used).
+    """
+    for enc in ("utf-8-sig", "utf-8", "cp1252"):
+        try:
+            return data.decode(enc), enc
+        except Exception:
+            continue
+    # Last resort: replace errors under cp1252
+    return data.decode("cp1252", errors="replace"), "cp1252"
+
+
+def _find_marker_blocks(lines: List[str]) -> List[Tuple[int, int]]:
+    """
+    Scan list of lines (with line endings preserved) and find non-nested
+    blocks delimited by start/end markers. Returns list of (start_idx, end_idx)
+    where indices refer to the marker lines themselves in 'lines'.
+    """
+    starts: List[int] = []
+    blocks: List[Tuple[int, int]] = []
+    start_token = _BAT_MARKER_START.lower()
+    end_token = _BAT_MARKER_END.lower()
+    for i, ln in enumerate(lines):
+        low = ln.lower()
+        if start_token in low:
+            starts.append(i)
+        elif end_token in low and starts:
+            s = starts.pop(0)
+            blocks.append((s, i))
+    return blocks
+
+
+def merge_protected_bat_sections(local_bytes: bytes, remote_bytes: bytes) -> bytes:
+    """
+    Merge remote .bat content with local protected regions:
+    - If remote content contains marker pairs, for each block, replace its inner
+      content with the corresponding local block content (by order), if present.
+    - Markers themselves remain as in the remote.
+    - If no markers are found in the remote, returns remote_bytes unchanged.
+    """
+    remote_text, remote_enc = _decode_text_best_effort(remote_bytes)
+    local_text, _local_enc = _decode_text_best_effort(local_bytes)
+
+    remote_lines = remote_text.splitlines(True)  # keepends
+    local_lines = local_text.splitlines(True)
+
+    r_blocks = _find_marker_blocks(remote_lines)
+    if not r_blocks:
+        return remote_bytes
+    l_blocks = _find_marker_blocks(local_lines)
+
+    # Build merged content using remote as baseline.
+    merged_lines: List[str] = []
+    last_end = -1
+    for idx, (rs, re) in enumerate(r_blocks):
+        # Up to and including start marker from remote
+        merged_lines.extend(remote_lines[last_end + 1 : rs + 1])
+
+        # Body: prefer local content inside markers if available
+        if idx < len(l_blocks):
+            ls, le = l_blocks[idx]
+            merged_lines.extend(local_lines[ls + 1 : le])
+        else:
+            merged_lines.extend(remote_lines[rs + 1 : re])
+
+        # End marker line from remote
+        merged_lines.append(remote_lines[re])
+        last_end = re
+
+    # Tail after the last block
+    merged_lines.extend(remote_lines[last_end + 1 :])
+
+    merged_text = "".join(merged_lines)
+    try:
+        return merged_text.encode(remote_enc)
+    except Exception:
+        # Fallback to utf-8 if encoding back with remote encoding fails
+        return merged_text.encode("utf-8")
+
+
 
 def is_self_target(local_path: str) -> bool:
     """
@@ -342,7 +433,16 @@ def sync_paths(
                     continue
                 local_bytes = read_local_bytes(local_path)
 
-                if local_bytes is not None and local_bytes == remote_bytes:
+                # Compute planned bytes, preserving protected regions in .bat files if present.
+                planned_bytes = remote_bytes
+                if local_bytes is not None and local_path.lower().endswith(".bat"):
+                    try:
+                        planned_bytes = merge_protected_bat_sections(local_bytes, remote_bytes)
+                    except Exception:
+                        # On any unexpected merge error, fall back to remote bytes
+                        planned_bytes = remote_bytes
+
+                if local_bytes is not None and local_bytes == planned_bytes:
                     skipped += 1
                     print(f"Up-to-date: {rel}")
                     continue
@@ -355,7 +455,7 @@ def sync_paths(
                 # Special handling: safely self-update on Windows by deferring replacement
                 if os.name == "nt" and is_self_target(local_path):
                     try:
-                        schedule_windows_deferred_replace(local_path, remote_bytes)
+                        schedule_windows_deferred_replace(local_path, planned_bytes)
                         if local_bytes is None:
                             created += 1
                             print(f"Scheduled create (self): {rel}")
@@ -367,7 +467,7 @@ def sync_paths(
                     continue
 
                 try:
-                    atomic_write(local_path, remote_bytes)
+                    atomic_write(local_path, planned_bytes)
                 except PermissionError as e:
                     print(f"Warning: could not update {rel}: {e}", file=sys.stderr)
                     continue
