@@ -10,19 +10,18 @@ setlocal ENABLEDELAYEDEXPANSION
 :: Stuff inside this section will not be overwritten by update-s.bat
 
 :: anything left commented will take on a default value
-set ROCM_VERSION=6.4
+set ROCM_VERSION=6.2
 set COMMANDLINE_ARGS=%*
 
 :: You'll only need to uncomment and set this if auto-detect fails.
 :: set TRITON_OVERRIDE_ARCH=gfx1100
 
-
+:: This is just for altering the cache names for quick tests, it means you can try weird things without messing
+:: up your regular cache.
+:: set TEST_FACTOR=none
 
 :: end of user configurable section
 ::-----END USER SECTION-----
-
-:: Or directly in this batch file:
-:: set ROCM_VERSION=6.4
 
 if not defined ROCM_VERSION set ROCM_VERSION=6.4
 
@@ -30,6 +29,9 @@ if not defined ROCM_VERSION set ROCM_VERSION=6.4
 
 set DEFAULT_HIP_BASE=%ProgramFiles%\AMD\ROCm
 set DEFAULT_HIP_PATH=%DEFAULT_HIP_BASE%\%ROCM_VERSION%\
+echo Default HIP base path: %DEFAULT_HIP_BASE%
+echo Default HIP path: %DEFAULT_HIP_PATH%
+echo Current HIP path: %HIP_PATH%
 
 :: Check if HIP_PATH is defined and outside DEFAULT_HIP_BASE
 if defined HIP_PATH (
@@ -40,6 +42,23 @@ if defined HIP_PATH (
         if "!ROCM_VERSION_FROM_PATH:~-1!"=="\" set "ROCM_VERSION_FROM_PATH=!ROCM_VERSION_FROM_PATH:~0,-1!"
         echo  ::  %time:~0,8%  ::  - Detected ROCM version from HIP_PATH: !ROCM_VERSION_FROM_PATH!
         echo  ::  %time:~0,8%  ::  - This script will not mess with your HIP_PATH, since you have set it to something non-standard
+    ) else (
+        set "EXPECTED_SUFFIX=%ROCM_VERSION%\"
+        if not "!HIP_PATH:~-1!"=="\" set "HIP_PATH=!HIP_PATH!\"
+        if not "!HIP_PATH:~-7,-1!"=="%ROCM_VERSION%" (
+            echo  ::  %time:~0,8%  ::  - Updating HIP_PATH to include ROCM_VERSION
+            echo  ::  %time:~0,8%  ::  - Old path: !HIP_PATH!
+            echo Stripping trailing backslash from HIP_PATH: !HIP_PATH!
+            if "!HIP_PATH:~-1!"=="\" set "HIP_PATH=!HIP_PATH:~0,-1!"
+            echo Updated HIP_PATH: !HIP_PATH!
+
+            echo Extracting parent directory path
+            for %%I in ("!HIP_PATH!") do set "HIP_PATH=%%~dpI"
+            echo Updated HIP_PATH: !HIP_PATH!
+
+            set "HIP_PATH=!HIP_PATH!%ROCM_VERSION%\"
+            echo  ::  %time:~0,8%  ::  - New path: !HIP_PATH!
+        )
     )
 ) else (
     set HIP_PATH=%DEFAULT_HIP_PATH%%ROCM_VERSION%
@@ -52,15 +71,15 @@ set CC=%HIP_PATH%bin\clang.exe
 set CXX=%HIP_PATH%bin\clang++.exe
 set CXXFLAGS=-march=native -mtune=native
 
-
 :: This is just for altering the cache names for quick tests, it means you can try weird things without messing
 :: up your regular cache.
-set TEST_FACTOR=none
+if not defined TEST_FACTOR set TEST_FACTOR=none
 
 :: This will be for when patientx enables environment variable setting for cudnn.  It will be like the CUDNN node
 :: that you can toggle, except that it happens right at the very start.  (And you can still change it with the 
 :: toggle later).
 set TORCH_BACKENDS_CUDNN_ENABLED=1
+set TORCH_BACKENDS_CUDNN_HISTORY=1
 
 :: Fix for cublasLt errors on newer ZLUDA (if no hipblaslt)
 set DISABLE_ADDMM_CUDA_LT=1
@@ -259,16 +278,16 @@ echo.
 pause
 
 
-set "BASE=%~dp0"
-
-set "FILE1=update-s.bat"
-set "URL1=https://raw.githubusercontent.com/sfinktah/ComfyUI-Zluda/refs/heads/sfink-hip64/update-s.bat"
-
-set "FILE2=update-s.py"
-set "URL2=https://raw.githubusercontent.com/sfinktah/ComfyUI-Zluda/refs/heads/sfink-hip64/update-s.py"
-
-call :ensure "%FILE1%" "%URL1%" || goto :eof
-call :ensure "%FILE2%" "%URL2%" || goto :eof
+:: set "BASE=%~dp0"
+::
+:: set "FILE1=update-s.bat"
+:: set "URL1=https://raw.githubusercontent.com/sfinktah/ComfyUI-Zluda/refs/heads/sfink-hip64/update-s.bat"
+::
+:: set "FILE2=update-s.py"
+:: set "URL2=https://raw.githubusercontent.com/sfinktah/ComfyUI-Zluda/refs/heads/sfink-hip64/update-s.py"
+::
+:: call :ensure "%FILE1%" "%URL1%" || goto :eof
+:: call :ensure "%FILE2%" "%URL2%" || goto :eof
 
 echo All done.
 goto :eof
