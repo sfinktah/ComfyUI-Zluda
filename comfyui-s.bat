@@ -287,19 +287,19 @@ echo.
 .\zluda\zluda.exe -- %PYTHON% main.py %COMMANDLINE_ARGS%
 pause
 
+set "BASE=%~dp0"
 
-:: set "BASE=%~dp0"
-::
-:: set "FILE1=update-s.bat"
-:: set "URL1=https://raw.githubusercontent.com/sfinktah/ComfyUI-Zluda/refs/heads/sfink-hip64/update-s.bat"
-::
-:: set "FILE2=update-s.py"
-:: set "URL2=https://raw.githubusercontent.com/sfinktah/ComfyUI-Zluda/refs/heads/sfink-hip64/update-s.py"
-::
-:: call :ensure "%FILE1%" "%URL1%" || goto :eof
-:: call :ensure "%FILE2%" "%URL2%" || goto :eof
+set "FILE1=update-s.bat"
+set "URL1=https://raw.githubusercontent.com/sfinktah/ComfyUI-Zluda/refs/heads/sfink-x/update-s.bat"
 
-echo All done.
+set "FILE2=update-s.py"
+set "URL2=https://raw.githubusercontent.com/sfinktah/ComfyUI-Zluda/refs/heads/sfink-x/update-s.py"
+
+call :ensure "%FILE1%" "%URL1%" || goto :eof
+call :ensure "%FILE2%" "%URL2%" || goto :eof
+
+echo Updating...
+update-s.bat
 goto :eof
 
 :ensure
