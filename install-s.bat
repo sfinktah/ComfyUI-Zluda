@@ -5,6 +5,7 @@ title ComfyUI-Zluda Installer
 
 set ZLUDA_COMGR_LOG_LEVEL=1
 :: set ESC=
+set ESC=
 if not defined ESC (
     for /f "delims=" %%E in ('powershell -NoProfile -ExecutionPolicy Bypass -Command "$e=[char]27; $e"') do set "ESC=%%E"
 )
@@ -70,44 +71,8 @@ echo %ESC%[96m║%ESC%[0m %ESC%[94m  └─────────────�
 echo %ESC%[96m╚══════════════════════════════════════════════════════════════════════════════╝%ESC%[0m
 echo.
 REM Detect AMD GPU architectures and choose appropriate one
-set "GPU1="
-set "GPU2="
-set "GPUCOUNT=0"
-for /f "delims=" %%A in ('"%HIP_PATH%bin\amdgpu-arch.exe"') do (
-    set /a GPUCOUNT+=1
-    if !GPUCOUNT! EQU 1 set "GPU1=%%A"
-    if !GPUCOUNT! EQU 2 set "GPU2=%%A"
-)
-if !GPUCOUNT! LSS 1 (
-    echo  ::  %time:~0,8%  ::  - WARNING: Unable to detect AMD GPU architecture.
-) else if !GPUCOUNT! EQU 1 (
-    set "TRITON_OVERRIDE_ARCH=!GPU1!"
-    echo  ::  %time:~0,8%  ::  - Detected GPU architecture: !TRITON_OVERRIDE_ARCH!
-) else (
-    if !GPUCOUNT! GTR 2 (
-        echo  ::  %time:~0,8%  ::  - OMG how many GPU do you have, I hate you so much.
-        set "TRITON_OVERRIDE_ARCH=!GPU2!"
-        echo  ::  %time:~0,8%  ::  - Selecting second architecture: !TRITON_OVERRIDE_ARCH!
-    ) else (
-        if /I "!GPU1!"=="!GPU2!" (
-            echo  ::  %time:~0,8%  ::  - OMG how many GPU do you have, I hate you so much.
-            set "TRITON_OVERRIDE_ARCH=!GPU2!"
-            echo  ::  %time:~0,8%  ::  - Selecting second architecture: !TRITON_OVERRIDE_ARCH!
-        ) else (
-            rem Select the greater architecture (lexical) as the discrete GPU
-            if /I "!GPU2!" GTR "!GPU1!" (
-                echo  ::  %time:~0,8%  ::  - Detected integrated Radeon graphics: !GPU1! and discrete Radeon GPU: !GPU2!
-                set "TRITON_OVERRIDE_ARCH=!GPU2!"
-                echo  ::  %time:~0,8%  ::  - Selecting discrete GPU architecture: !TRITON_OVERRIDE_ARCH!
-            ) else (
-                echo  ::  %time:~0,8%  ::  - Detected integrated Radeon graphics: !GPU2! and discrete Radeon GPU: !GPU1!
-                set "TRITON_OVERRIDE_ARCH=!GPU1!"
-                echo  ::  %time:~0,8%  ::  - Selecting discrete GPU architecture: !TRITON_OVERRIDE_ARCH!
-            )
-        )
-    )
-)
-echo.
+:: Autodetect the GPU and set TRITON_OVERRIDE_ARCH
+call sfink\scripts\get-amd-arch.bat
 
 pause
 echo  ::  %time:~0,8%  ::  - Setting up the virtual enviroment
