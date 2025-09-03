@@ -6,7 +6,7 @@ setlocal ENABLEDELAYEDEXPANSION
 
 :: anything left commented will take on a default value
 
-set ROCM_VERSION=6.4
+set ROCM_VERSION=6.2
 set COMMANDLINE_ARGS=%*
 
 :: You'll only need to uncomment and set this if auto-detect fails.
@@ -33,7 +33,7 @@ set COMMANDLINE_ARGS=%*
 :: end of user configurable section
 ::-----END USER SECTION-----
 
-if not defined ROCM_VERSION set ROCM_VERSION=6.4
+if not defined ROCM_VERSION set ROCM_VERSION=6.2
 
 :: lets auto-detect the stupid GPU for fun
 

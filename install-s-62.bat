@@ -165,8 +165,8 @@ pypatch-url apply https://raw.githubusercontent.com/sfinktah/amd-torch/refs/head
 
 echo.
 echo  ::  %time:~0,8%  ::  Custom node(s) installation ...
-echo. 
-echo :: %time:~0,8%  ::  - Installing CFZ Nodes (description in readme on github) 
+echo.
+echo :: %time:~0,8%  ::  - Installing CFZ Nodes (description in readme on github)
 copy cfz\cfz_patcher.py custom_nodes\cfz_patcher.py /y >NUL
 copy cfz\cfz_cudnn.toggle.py custom_nodes\cfz_cudnn.toggle.py /y >NUL
 copy cfz\cfz_vae_loader.py custom_nodes\cfz_vae_loader.py /y >NUL
@@ -221,17 +221,17 @@ copy zluda\cufftw.dll %VIRTUAL_ENV%\Lib\site-packages\torch\lib\cufftw64_10.dll 
 copy comfy\customzluda\zluda.py comfy\zluda.py /y >NUL
 
 echo  ::  %time:~0,8%  ::  - ZLUDA 3.9.5 nightly patched for HIP SDK 6.2.4 / 6.4.2 with miopen and triton-flash attention.
-echo. 
+echo.
 set "endTime=%time: =0%"
 set "end=!endTime:%time:~8,1%=%%100)*100+1!"  &  set "start=!startTime:%time:~8,1%=%%100)*100+1!"
 set /A "elap=((((10!end:%time:~2,1%=%%100)*60+1!%%100)-((((10!start:%time:~2,1%=%%100)*60+1!%%100), elap-=(elap>>31)*24*60*60*100"
 set /A "cc=elap%%100+100,elap/=100,ss=elap%%60+100,elap/=60,mm=elap%%60+100,hh=elap/60+100"
-echo ..................................................... 
-echo *** Installation is completed in %hh:~1%%time:~2,1%%mm:~1%%time:~2,1%%ss:~1%%time:~8,1%%cc:~1% . 
-echo *** You can use "comfyui-n.bat" to start the app later. 
+echo .....................................................
+echo *** Installation is completed in %hh:~1%%time:~2,1%%mm:~1%%time:~2,1%%ss:~1%%time:~8,1%%cc:~1% .
+echo *** You can use "comfyui-n.bat" to start the app later.
 echo *** It is advised to make a copy of "comfyui-n.bat" and modify it to your liking so when updating later it won't cause problems.
-echo *** You can use -- "--use-pytorch-cross-attention" , "--use-quad-cross-attention" , "--use-flash-attention" or "--use-sage-attention" 
-echo ..................................................... 
+echo *** You can use -- "--use-pytorch-cross-attention" , "--use-quad-cross-attention" , "--use-flash-attention" or "--use-sage-attention"
+echo .....................................................
 echo.
 echo *** Starting the Comfyui-ZLUDA for the first time, please be patient...
 echo.
@@ -242,6 +242,3 @@ echo *** Customise comfyui-s.bat with your preferred settings, and launch using 
 echo **********//
 
 comfyui-s.bat --auto-launch --use-quad-cross-attention --lowvram --reserve-vram 0
-
-
-
