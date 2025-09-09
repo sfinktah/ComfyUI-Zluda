@@ -14,7 +14,7 @@ set "PY=py -3"
 %PY% -V >nul 2>&1
 if errorlevel 1 (
   set "PY=python"
-  %PY% -V >nul 2>&1 || (
+  call %%PY%% -V >nul 2>&1 || (
     echo Error: Python not found. Please install Python 3 and try again.
     exit /b 1
   )
@@ -27,6 +27,7 @@ rem Update safe targets directly into current directory (non-batch files)
   --path patchzluda-s.bat ^
   --path update-s.py ^
   --path install-s.bat ^
+  --path install-s-62.bat ^
   --path update-s.bat ^
   --path comfyui-s.bat ^
   --path sfink/scripts

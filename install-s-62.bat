@@ -18,13 +18,13 @@ if not defined HIP_PATH (
     echo  ::  %time:~0,8%  ::  - ERROR: HIP_PATH is not set or empty.
     echo  ::  %time:~0,8%  ::  - Please install HIP SDK 6.2 from:
     echo      https://www.amd.com/en/developer/resources/rocm-hub/hip-sdk.html
-    if exist "%ProgramFiles%\AMD\ROCm\6.4\" (
+    if exist "%ProgramFiles%\AMD\ROCm\6.2\" (
         echo  ::  %time:~0,8%  ::  - NOTE: If you have already installed it, you may need to close and re-open this console/shell.
     )
     exit /b 1
 )
 if /I not "%HIP_PATH:~-4%"=="6.2\" (
-    echo  ::  %time:~0,8%  ::  - ERROR: HIP_PATH must end with 6.4\
+    echo  ::  %time:~0,8%  ::  - ERROR: HIP_PATH must end with 6.2\
     echo  ::  %time:~0,8%  ::  - Current HIP_PATH: %HIP_PATH%
     echo  ::  %time:~0,8%  ::  - Please install HIP SDK 6.2 from:
     echo      https://www.amd.com/en/developer/resources/rocm-hub/hip-sdk.html
@@ -67,15 +67,23 @@ echo %ESC%[96m║%ESC%[0m %ESC%[94m  │%ESC%[0m %ESC%[97m        Powered by ZLU
 echo %ESC%[96m║%ESC%[0m %ESC%[94m  └─────────────────────────────────────────────────────────────────────┘   %ESC%[0m %ESC%[96m║%ESC%[0m
 echo %ESC%[96m╚══════════════════════════════════════════════════════════════════════════════╝%ESC%[0m
 echo.
+
 REM Detect AMD GPU architectures and choose appropriate one
 :: Autodetect the GPU and set TRITON_OVERRIDE_ARCH
 call sfink\scripts\get-amd-arch.bat
 
 pause
+REM Detect and report Python installations
+echo  ::  %time:~0,8%  ::  - Detecting Python installations
+call sfink\scripts\find_python.bat
+if %errorlevel% neq 0 (
+    exit /b %errorlevel%
+)
+
 echo  ::  %time:~0,8%  ::  - Setting up the virtual enviroment
 Set "VIRTUAL_ENV=venv"
 If Not Exist "%VIRTUAL_ENV%\Scripts\activate.bat" (
-    python.exe -m venv %VIRTUAL_ENV%
+    "%PYTHON_EXE%" -m venv %VIRTUAL_ENV%
 )
 
 If Not Exist "%VIRTUAL_ENV%\Scripts\activate.bat" Exit /B 1
@@ -83,11 +91,13 @@ If Not Exist "%VIRTUAL_ENV%\Scripts\activate.bat" Exit /B 1
 echo  ::  %time:~0,8%  ::  - Virtual enviroment activation
 Call "%VIRTUAL_ENV%\Scripts\activate.bat"
 echo  ::  %time:~0,8%  ::  - Updating the pip package
-python.exe -m pip install --upgrade pip --quiet
+set PYTHON_EXE=python.exe
+"%PYTHON_EXE%" -m pip install --upgrade pip --quiet
 echo.
 echo  ::  %time:~0,8%  ::  Beginning installation ...
 echo.
 echo  ::  %time:~0,8%  ::  - Installing torch for AMD GPUs (First file is 2.7 GB, please be patient)
+pause
 :: install pytorch 2.8.0 for cuda11.8 (currently broken, due to issue with pytorch nightly repo)
 :: pip install --force-reinstall torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu118
 
@@ -123,7 +133,7 @@ pip install --force-reinstall numpy==1.* --quiet
 
 echo  ::  %time:~0,8%  ::  - Detecting Python version and installing appropriate triton package
 
-for /f "tokens=1,2 delims=." %%a in ('python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')"') do (
+for /f "tokens=1,2 delims=." %%a in ('"%PYTHON_EXE%" -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')"') do (
     set "PY_MAJOR=%%a"
     set "PY_MINOR=%%b"
     goto :version_detected
@@ -141,7 +151,7 @@ if "%PY_MINOR%"=="12" (
 ) else (
     echo  ::  %time:~0,8%  ::  - WARNING: Unsupported Python version 3.%PY_MINOR%, skipping triton installation
     echo  ::  %time:~0,8%  ::  - Full version info:
-    python -c "import sys; print(f'Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}')"
+    "%PYTHON_EXE%" -c "import sys; print(f'Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}')"
 )
 
 :: patching triton & torch (from sfinktah ; https://github.com/sfinktah/amd-torch )
@@ -178,7 +188,7 @@ git clone https://github.com/styler00dollar/ComfyUI-deepcache.git --quiet
 git clone https://github.com/sfinktah/comfy-ovum --quiet
 cd ..
 
-FOR /F "tokens=* delims=" %%i IN ('python -c "import sys; print(f'{sys.base_prefix}\\libs')"') DO (
+FOR /F "tokens=* delims=" %%i IN ('"%PYTHON_EXE%" -c "import sys; print(f'{sys.base_prefix}\\libs')"') DO (
     SET "PYTHON_LIBS_PATH=%%i"
 )
 if exist "%PYTHON_LIBS_PATH%\" (
@@ -200,27 +210,7 @@ if %ERRLEVEL% neq 0 (
 
 echo.
 echo  ::  %time:~0,8%  ::  - Patching ZLUDA
-:: Download ZLUDA version 3.9.5 nightly
-rmdir /S /Q zluda 2>nul
-mkdir zluda
-cd zluda
-%SystemRoot%\system32\curl.exe -sL --ssl-no-revoke https://nt4.com/zluda > zluda.zip
-%SystemRoot%\system32\tar.exe -xf zluda.zip
-del zluda.zip
-cd ..
-:: Patch DLLs
-copy zluda\cublas.dll %VIRTUAL_ENV%\Lib\site-packages\torch\lib\cublas64_11.dll /y >NUL
-copy zluda\cusparse.dll %VIRTUAL_ENV%\Lib\site-packages\torch\lib\cusparse64_11.dll /y >NUL
-copy %VIRTUAL_ENV%\Lib\site-packages\torch\lib\nvrtc64_112_0.dll %VIRTUAL_ENV%\Lib\site-packages\torch\lib\nvrtc_cuda.dll /y >NUL
-copy zluda\nvrtc.dll %VIRTUAL_ENV%\Lib\site-packages\torch\lib\nvrtc64_112_0.dll /y >NUL
-:: removed cudnn dll patching , check the results
-:: copy zluda\cudnn.dll %VIRTUAL_ENV%\Lib\site-packages\torch\lib\cudnn64_9.dll /y >NUL
-copy zluda\cudnn.dll %VIRTUAL_ENV%\Lib\site-packages\torch\lib\cudnn64_9.dll /y >NUL
-copy zluda\cufft.dll %VIRTUAL_ENV%\Lib\site-packages\torch\lib\cufft64_10.dll /y >NUL
-copy zluda\cufftw.dll %VIRTUAL_ENV%\Lib\site-packages\torch\lib\cufftw64_10.dll /y >NUL
-copy comfy\customzluda\zluda.py comfy\zluda.py /y >NUL
-
-echo  ::  %time:~0,8%  ::  - ZLUDA 3.9.5 nightly patched for HIP SDK 6.2.4 / 6.4.2 with miopen and triton-flash attention.
+patchzluda-s.bat
 echo.
 set "endTime=%time: =0%"
 set "end=!endTime:%time:~8,1%=%%100)*100+1!"  &  set "start=!startTime:%time:~8,1%=%%100)*100+1!"
