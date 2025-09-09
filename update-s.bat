@@ -20,6 +20,7 @@ if errorlevel 1 (
   )
 )
 
+%PY% -m pip install requests --quiet
 echo Updating from %REPO% @ %BRANCH% ...
 
 rem Update safe targets directly into current directory (non-batch files)
