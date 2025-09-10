@@ -72,7 +72,6 @@ REM Detect AMD GPU architectures and choose appropriate one
 :: Autodetect the GPU and set TRITON_OVERRIDE_ARCH
 call sfink\scripts\get-amd-arch.bat
 
-pause
 REM Detect and report Python installations
 echo  ::  %time:~0,8%  ::  - Detecting Python installations
 call sfink\scripts\find_python.bat
@@ -218,17 +217,10 @@ set /A "elap=((((10!end:%time:~2,1%=%%100)*60+1!%%100)-((((10!start:%time:~2,1%=
 set /A "cc=elap%%100+100,elap/=100,ss=elap%%60+100,elap/=60,mm=elap%%60+100,hh=elap/60+100"
 echo .....................................................
 echo *** Installation is completed in %hh:~1%%time:~2,1%%mm:~1%%time:~2,1%%ss:~1%%time:~8,1%%cc:~1% .
-echo *** You can use "comfyui-n.bat" to start the app later.
-echo *** It is advised to make a copy of "comfyui-n.bat" and modify it to your liking so when updating later it won't cause problems.
-echo *** You can use -- "--use-pytorch-cross-attention" , "--use-quad-cross-attention" , "--use-flash-attention" or "--use-sage-attention"
+echo *** You can use "comfyui-s.bat" to start the app in future.
 echo .....................................................
 echo.
 echo *** Starting the Comfyui-ZLUDA for the first time, please be patient...
 echo.
-set FLASH_ATTENTION_TRITON_AMD_ENABLE=TRUE
-set MIOPEN_FIND_MODE=2
-set MIOPEN_LOG_LEVEL=3
-echo *** Customise comfyui-s.bat with your preferred settings, and launch using that ***
-echo **********//
 
 comfyui-s.bat --auto-launch --use-quad-cross-attention --lowvram --reserve-vram 0
