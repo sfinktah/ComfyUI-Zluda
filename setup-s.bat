@@ -8,6 +8,10 @@ set "URL1=https://raw.githubusercontent.com/sfinktah/ComfyUI-Zluda/refs/heads/sf
 set "FILE2=update-s.py"
 set "URL2=https://raw.githubusercontent.com/sfinktah/ComfyUI-Zluda/refs/heads/sfink-x/update-s.py"
 
+:: Delete existing update-s files to ensure we get the latest versions
+if exist "%FILE1%" del "%FILE1%" /q
+if exist "%FILE2%" del "%FILE2%" /q
+
 call :ensure "%FILE1%" "%URL1%" || goto :eof
 call :ensure "%FILE2%" "%URL2%" || goto :eof
 
