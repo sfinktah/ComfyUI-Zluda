@@ -6,14 +6,11 @@ title ComfyUI-Zluda Installer
 set ZLUDA_COMGR_LOG_LEVEL=1
 :: set ESC=
 set ESC=
-if not defined ESC (
-    for /f "delims=" %%E in ('powershell -NoProfile -ExecutionPolicy Bypass -Command "$e=[char]27; $e"') do set "ESC=%%E"
-)
+for /F "tokens=1,2 delims=#" %%a in ('"prompt #$H#$E# & echo on & for %%b in (1) do rem"') do set ESC=%%b
 
 setlocal EnableDelayedExpansion
 set "startTime=%time: =0%"
 
-echo  ::  %time:~0,8%  ::  - Verifying HIP SDK environment
 if not defined HIP_PATH (
     echo  ::  %time:~0,8%  ::  - ERROR: HIP_PATH is not set or empty.
     echo  ::  %time:~0,8%  ::  - Please install HIP SDK 6.2 from:
@@ -132,9 +129,13 @@ pip install --force-reinstall numpy==1.* --quiet
 
 echo  ::  %time:~0,8%  ::  - Detecting Python version and installing appropriate triton package
 
-for /f "tokens=1,2 delims=." %%a in ('"%PYTHON_EXE%" -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')"') do (
-    set "PY_MAJOR=%%a"
-    set "PY_MINOR=%%b"
+for /f "usebackq tokens=2 delims= " %%v in (`
+    cmd /d /c ""%PYTHON_EXE%" -V 2^>^&1"
+`) do (
+    for /f "tokens=1,2 delims=." %%a in ("%%v") do (
+        set "PY_MAJOR=%%a"
+        set "PY_MINOR=%%b"
+    )
     goto :version_detected
 )
 
