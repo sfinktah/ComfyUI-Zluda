@@ -8,6 +8,8 @@ setlocal ENABLEDELAYEDEXPANSION
 
 set ROCM_VERSION=6.2
 set COMMANDLINE_ARGS=%*
+:: uncomment for gfx1100 or newer
+:: set PYTORCH_TUNABLEOP_ENABLED=1
 
 :: You'll only need to uncomment and set this if auto-detect fails.
 :: set TRITON_OVERRIDE_ARCH=gfx1100
@@ -261,7 +263,7 @@ if not defined MIOPEN_FIND_MODE set MIOPEN_FIND_MODE=2
 if not defined MIOPEN_LOG_LEVEL set MIOPEN_LOG_LEVEL=3
 
 :: https://github.com/Beinsezii/comfyui-amd-go-fast
-set PYTORCH_TUNABLEOP_ENABLED=1 
+if not defined PYTORCH_TUNABLEOP_ENABLED set PYTORCH_TUNABLEOP_ENABLED=0
 if not defined MIOPEN_FIND_MODE set MIOPEN_FIND_MODE=FAST
 
 :: Enabling this will cause rocm's amd triton flash-attn to look for CDNA optimisations (we have RDNA, so it will fail -- unless we patch flash attention of course :)
