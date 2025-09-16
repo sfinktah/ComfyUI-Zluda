@@ -32,8 +32,10 @@ if /I not "%HIP_PATH:~-4%"=="6.2\" (
 )
 if not exist "%HIP_PATH%bin\miopen.dll" (
     echo  ::  %time:~0,8%  ::  - ERROR: MIOpen not found at %HIP_PATH%bin\miopen.dll
-    echo  ::  %time:~0,8%  ::  - Please download HIP SDK 6.2 custom hacks and follow appropriate instructions at
-    echo      https://github.com/patientx/ComfyUI-Zluda
+    echo  ::  %time:~0,8%  ::  - Please download HIP SDK 6.2 custom hacks extract them into %HIP_PATH%
+    echo      https://drive.google.com/file/d/1Gvg3hxNEj2Vsd2nQgwadrUEY6dYXy0H9/view?usp=sharing
+    echo                       - If you have an older GPU, there may be additional instructions to follow at
+    echo      https://github.com/sfinktah/ComfyUI-Zluda/?tab=readme-ov-file#setup-windows-only
     exit /b 1
 )
 
