@@ -31,4 +31,5 @@ rem Update safe targets directly into current directory (non-batch files)
   --path install-s-62.bat ^
   --path update-s.bat ^
   --path comfyui-s.bat ^
+  --path setup-s.bat ^
   --path sfink/scripts && exit /b 0 || exit /b 1
