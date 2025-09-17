@@ -13,7 +13,7 @@ rem Locate Python: prefer 'py -3', fallback to 'python'
 set "PY=py -3"
 %PY% -V >nul 2>&1
 if errorlevel 1 (
-  set "PY=python"
+  set "PY=python
   call %%PY%% -V >nul 2>&1 || (
     echo Error: Python not found. Please install Python 3 and try again.
     exit /b 1
