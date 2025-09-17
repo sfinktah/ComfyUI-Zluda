@@ -221,6 +221,11 @@ def read_local_bytes(path: str) -> Optional[bytes]:
 
 def atomic_write(path: str, data: bytes) -> None:
     ensure_parent_dir(path)
+
+    # Convert to CRLF line endings for .bat files  
+    if path.lower().endswith(".bat"):  
+        data = data.replace(b"\n", b"\r\n").replace(b"\r\r\n", b"\r\n")  
+
     tmp_path = f"{path}.tmp~"
     with open(tmp_path, "wb") as f:
         f.write(data)
@@ -361,6 +366,10 @@ def schedule_windows_deferred_replace(target_path: str, data: bytes) -> None:
     tempdir = tempfile.mkdtemp(prefix="update-s-self-")
     staged_path = os.path.join(tempdir, os.path.basename(target_path))
     ensure_parent_dir(staged_path)
+    # Convert to CRLF line endings for .bat files  
+    if staged_path.lower().endswith(".bat"):  
+        data = data.replace(b"\n", b"\r\n").replace(b"\r\r\n", b"\r\n")  
+
     with open(staged_path, "wb") as f:
         f.write(data)
         f.flush()
