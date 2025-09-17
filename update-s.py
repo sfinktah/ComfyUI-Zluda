@@ -383,11 +383,11 @@ def schedule_windows_deferred_replace(target_path: str, data: bytes) -> None:
     script = "\n".join([
         "@echo off",
         "setlocal enableextensions",
-        "timeout /t 1 /nobreak >nul",
+        "ping 127.0.0.1 -n 2 >nul",  # Sleep for approximately 1 second
         ":retry",
         f'move /y {target_q} {target_q}.old >nul 2>&1',
         "if errorlevel 1 (",
-        "  timeout /t 1 /nobreak >nul",
+        "  ping 127.0.0.1 -n 2 >nul",  # Sleep for approximately 1 second
         "  goto :retry",
         ")",
         f"move /y {staged_q} {target_q} >nul",
