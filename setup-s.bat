@@ -38,8 +38,13 @@ exit /b 0
 rem %1 = url, %2 = out file
 set "URL=%~1"
 set "OUT=%~2"
+set "OUTTMP=%OUT%.tmp"
 
 curl -L -f -s -S "%URL%" -o "%OUT%"
-if not errorlevel 1 exit /b 0
+if errorlevel 1 exit /b 1
+copy /A "%OUTTMP%" "%OUT%" >nul 2>&1
+if errorlevel 1 exit /b 1
+del "%OUTTMP%" >nul 2>&1
+if errorlevel 1 exit /b 1
 
 exit /b 1

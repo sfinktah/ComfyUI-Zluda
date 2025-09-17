@@ -6,7 +6,7 @@ title ComfyUI-Zluda Installer
 set ZLUDA_COMGR_LOG_LEVEL=1
 :: set ESC=
 set ESC=
-for /F "tokens=1,2 delims=#" %%a in ('"prompt #$H#$E# & echo on & for %%b in (1) do rem"') do set ESC=%%b
+for /F "delims=#" %%a in ('prompt #$E# ^& for %%a in ^(1^) do rem') do set "esc=%%a"
 
 setlocal EnableDelayedExpansion
 set "startTime=%time: =0%"
@@ -39,7 +39,7 @@ if not exist "%HIP_PATH%bin\miopen.dll" (
     exit /b 1
 )
 
-cls
+:: cls
 
 echo %ESC%[96m╔══════════════════════════════════════════════════════════════════════════════╗%ESC%[0m
 echo %ESC%[96m║%ESC%[0m %ESC%[91m   ____                 __       _   _ ____   ___           _        _ _    %ESC%[0m %ESC%[96m║%ESC%[0m
@@ -194,16 +194,16 @@ FOR /F "tokens=* delims=" %%i IN ('"%PYTHON_EXE%" -c "import sys; print(f'{sys.b
     SET "PYTHON_LIBS_PATH=%%i"
 )
 if exist "%PYTHON_LIBS_PATH%\" (
-    echo Found Python libs path via sys.base_prefix: !PYTHON_LIBS_PATH!
+    echo Found Python libs path via sys.base_prefix: %PYTHON_LIBS_PATH%
 ) else (
     echo Path not found via sys.base_prefix.
 
     REM Construct and set the corrected fallback path.
-    SET "FALLBACK_PATH=%LocalAppData%\Programs\Python\Python3!PY_MINOR!\libs"
-    SET "PYTHON_LIBS_PATH=!FALLBACK_PATH!"
-    echo Using fallback path: !PYTHON_LIBS_PATH!
+    SET "FALLBACK_PATH=%LocalAppData%\Programs\Python\Python3%PY_MINOR%\libs"
+    SET "PYTHON_LIBS_PATH=%FALLBACK_PATH%"
+    echo Using fallback path: %PYTHON_LIBS_PATH%
 )
-xcopy /E /I /Y "!PYTHON_LIBS_PATH!" "venv\libs"
+xcopy /E /I /Y "%PYTHON_LIBS_PATH%" "venv\libs"
 set ERRLEVEL=%errorlevel%
 if %ERRLEVEL% neq 0 (
     echo "Failed to copy Python3%PY_MINOR%\libs to virtual environment."
@@ -224,6 +224,11 @@ echo *** You can use "comfyui-s.bat" to start the app in future.
 echo .....................................................
 echo.
 echo *** Starting the Comfyui-ZLUDA for the first time, please be patient...
+
+echo *** You can use "comfyui-s.bat" to start the app in future,
+echo *** though you should quickly edit it and edit the options at
+echo *** at the start, like TRITON_OVERRIDE_ARCH
+
 echo.
 
 comfyui-s.bat --auto-launch --use-quad-cross-attention --lowvram --reserve-vram 0

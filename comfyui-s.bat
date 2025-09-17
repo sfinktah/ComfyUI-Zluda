@@ -75,6 +75,9 @@ if defined HIP_PATH (
 ) else (
     set HIP_PATH=%DEFAULT_HIP_PATH%%ROCM_VERSION%
 )
+if not defined TRITON_OVERRIDE_ARCH (
+    call sfink\scripts\get-amd-arch.bat
+)
 
 set HIP_PATH_62=%HIP_PATH%
 set HIP_PATH_64=%HIP_PATH%
