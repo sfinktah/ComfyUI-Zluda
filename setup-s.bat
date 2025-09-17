@@ -1,6 +1,6 @@
 @echo off
 echo Bootstrapping installer...
-set "BASE=%~dp0"
+set "BASE=%CD%\"
 
 set "FILE1=update-s.bat"
 set "URL1=https://raw.githubusercontent.com/sfinktah/ComfyUI-Zluda/refs/heads/sfink-x/update-s.bat"
@@ -40,11 +40,11 @@ set "URL=%~1"
 set "OUT=%~2"
 set "OUTTMP=%OUT%.tmp"
 
-curl -L -f -s -S "%URL%" -o "%OUT%"
+curl -L -f -s -S "%URL%" -o "%OUTTMP%"
 if errorlevel 1 exit /b 1
-copy /A "%OUTTMP%" "%OUT%" >nul 2>&1
-if errorlevel 1 exit /b 1
-del "%OUTTMP%" >nul 2>&1
-if errorlevel 1 exit /b 1
-
-exit /b 1
+move /Y "%OUTTMP%" "%OUT%" >nul 2>&1
+if errorlevel 1 (
+    del "%OUTTMP%" >nul 2>&1
+    exit /b 1
+)
+exit /b 0
