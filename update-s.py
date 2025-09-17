@@ -147,22 +147,15 @@ def download_file_raw(
     token: Optional[str],
     wait_on_rate_limit: bool,
 ) -> bytes:
-    # GET raw content via contents API
+    # GET raw content directly from raw.githubusercontent.com
     qp = quote(path.lstrip("/"), safe="/")
-    url = f"{GITHUB_API}/repos/{owner}/{repo}/contents/{qp}"
-    headers = _auth_headers(token, accept="application/vnd.github.raw")
-    params = {"ref": ref}
+    url = f"https://raw.githubusercontent.com/{owner}/{repo}/refs/heads/{ref}/{qp}"
     while True:
-        resp = _request_with_rate_handling("GET", url, headers=headers, params=params, stream=False)
+        resp = requests.get(url, stream=False)
         if resp.status_code == 404:
             raise GitHubSyncError(f"File not found: {path} (ref={ref})")
-        if resp.status_code == 403:
-            _check_rate_limit(resp, wait_on_limit=wait_on_rate_limit)
-            if resp.status_code == 403:
-                raise GitHubSyncError(f"Access denied or rate limited while downloading {path}")
-            continue
         if not resp.ok:
-            raise GitHubSyncError(f"Failed to download {path}: {resp.status_code} {resp.text}")
+            raise GitHubSyncError(f"Failed to download {path}: {resp.status_code} {resp.reason}")
         return resp.content
 
 
