@@ -212,7 +212,7 @@ if %ERRLEVEL% neq 0 (
 
 echo.
 echo  ::  %time:~0,8%  ::  - Patching ZLUDA
-patchzluda-s.bat
+call patchzluda-s.bat
 echo.
 set "endTime=%time: =0%"
 set "end=!endTime:%time:~8,1%=%%100)*100+1!"  &  set "start=!startTime:%time:~8,1%=%%100)*100+1!"

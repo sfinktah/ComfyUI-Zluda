@@ -15,7 +15,7 @@ if exist "%FILE2%" del "%FILE2%" /q
 call :ensure "%FILE1%" "%URL1%" || goto :eof
 call :ensure "%FILE2%" "%URL2%" || goto :eof
 
-echo Running installer...
+:: echo Running installer...
 :: call update-s.bat
 
 echo Hopefully, all done!
