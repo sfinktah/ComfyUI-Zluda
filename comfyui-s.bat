@@ -107,7 +107,7 @@ if not defined HIP_PATH (
     echo  ::  %time:~0,8%  ::  - ERROR: HIP_PATH is not set or empty.
     echo  ::  %time:~0,8%  ::  - Please install HIP SDK from like... anywhere, including but not limited to:
     echo      https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-25.Q3-Win10-Win11-For-HIP.exe
-    if exist "%ProgramFiles%\AMD\ROCm\6.4\" (
+    if exist "%ProgramFiles%\AMD\ROCm\%ROCM_VERSION%\" (
         echo  ::  %time:~0,8%  ::  - NOTE: If you have already installed it, you may need to close and re-open this console/shell.
     )
     exit /b 1
@@ -115,11 +115,7 @@ if not defined HIP_PATH (
 
 if not exist "%HIP_PATH%bin\miopen.dll" (
     echo  ::  %time:~0,8%  ::  - ERROR: MIOpen not found at %HIP_PATH%bin\miopen.dll
-    echo  ::  %time:~0,8%  ::  - Please download an appropriate HIP SDK custom zip from:
-    echo      https://nt4.com/HIP-SDK-6.5-develop.zip or where-ever good HIP SDK custom zips are served
-    echo  ::  %time:~0,8%  ::  - Then extract the directories in the 6.x folder into:
-    echo      %HIP_PATH%
-    echo  ::  %time:~0,8%  ::  - Do NOT overwrite any existing files.
+    echo  ::  %time:~0,8%  ::  - Please download an appropriate HIP SDK custom zip
     exit /b 1
 )
 
