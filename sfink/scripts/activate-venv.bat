@@ -24,8 +24,7 @@ echo  ::  %time:~0,8%  ::  - Please ensure a virtual environment exists before r
 exit /b 1
 
 :venv_found
-echo  ::  %time:~0,8%  ::  - Found virtual environment at: %VIRTUAL_ENV%
-
+echo  ::  %time:~0,8%  ::  - Found virtual environment at: %cd%\%VIRTUAL_ENV%
 :: Activate virtual environment
 echo  ::  %time:~0,8%  ::  - Activating virtual environment
 call "%VIRTUAL_ENV%\Scripts\activate.bat"

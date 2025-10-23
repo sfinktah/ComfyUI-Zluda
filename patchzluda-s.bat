@@ -1,5 +1,4 @@
 @Echo off
-cls
 echo ===============================================
 echo Custom ZLUDA Patcher (Specifically for HIP 6.x)
 echo ===============================================
@@ -88,16 +87,16 @@ echo Copying files to Torch library...
 if "%target_dir%"=="zluda" (
     xcopy cublas.dll "%torch_dir%\cublas64_11.dll" /Y /F
     xcopy cusparse.dll "%torch_dir%\cusparse64_11.dll" /Y /F
-    rename "%torch_dir%\nvrtc64_112_0.dll" nvrtc_cuda.dll
-    xcopy nvrtc.dll "%torch_dir%\nvrtc64_112_0.dll" /Y /F
+    rename "%torch_dir%\nvrtc64_112_0.dll" nvrtc_cuda.dll >nul 2>&1
+    xcopy nvrtc.dll "%torch_dir%\nvrtc64_112_0.dll" /-I /Y /F
     xcopy cudnn.dll "%torch_dir%\cudnn64_9.dll" /Y /F
     xcopy cufft.dll "%torch_dir%\cufft64_10.dll" /Y /F
     xcopy cufftw.dll "%torch_dir%\cufftw64_10.dll" /Y /F
 ) else (
     xcopy zluda\cublas.dll "%torch_dir%\cublas64_11.dll" /Y /F
     xcopy zluda\cusparse.dll "%torch_dir%\cusparse64_11.dll" /Y /F
-    rename "%torch_dir%\nvrtc64_112_0.dll" nvrtc_cuda.dll
-    xcopy zluda\nvrtc.dll "%torch_dir%\nvrtc64_112_0.dll" /Y /F
+    rename "%torch_dir%\nvrtc64_112_0.dll" nvrtc_cuda.dll >nul 2>&1
+    xcopy zluda\nvrtc.dll "%torch_dir%\nvrtc64_112_0.dll" /-I /Y /F
     xcopy zluda\cudnn.dll "%torch_dir%\cudnn64_9.dll" /Y /F
     xcopy zluda\cufft.dll "%torch_dir%\cufft64_10.dll" /Y /F
     xcopy zluda\cufftw.dll "%torch_dir%\cufftw64_10.dll" /Y /F

@@ -26,10 +26,13 @@ if %errorlevel% neq 0 exit /b %errorlevel%
 :: Find and call patchzluda-s.bat
 echo  ::  %time:~0,8%  ::  - Looking for patchzluda-s.bat
 if exist "%~dp0patchzluda-s.bat" (
+    echo  ::  %time:~0,8%  ::  - Found patchzluda-s.bat at %~dp0patchzluda-s.bat
     call "%~dp0patchzluda-s.bat"
 ) else if exist "patchzluda-s.bat" (
+    echo  ::  %time:~0,8%  ::  - Found patchzluda-s.bat at %CD%\patchzluda-s.bat 
     call "patchzluda-s.bat"
 ) else if exist "..\..\patchzluda-s.bat" (
+    echo  ::  %time:~0,8%  ::  - Found patchzluda-s.bat at %CD%\..\..\patchzluda-s.bat
     call "..\..\patchzluda-s.bat"
 ) else (
     echo  ::  %time:~0,8%  ::  - WARNING: patchzluda-s.bat not found in script directory, current directory, or ../..
