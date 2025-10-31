@@ -79,7 +79,6 @@ if not defined TEST_FACTOR set TEST_FACTOR=none
 :: that you can toggle, except that it happens right at the very start.  (And you can still change it with the 
 :: toggle later).
 set TORCH_BACKENDS_CUDNN_ENABLED=1
-set TORCH_BACKENDS_CUDNN_HISTORY=1
 
 :: Fix for cublasLt errors on newer ZLUDA (if no hipblaslt)
 set DISABLE_ADDMM_CUDA_LT=1
